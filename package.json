@@ -1,0 +1,57 @@
+{
+  "name": "dsl-queue-vue-2",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint"
+  },
+  "dependencies": {
+    "@types/axios": "^0.14.0",
+    "autoprefixer": "^10",
+    "axios": "^1.6.8",
+    "core-js": "^3.8.3",
+    "postcss": "^8",
+    "register-service-worker": "^1.7.2",
+    "tailwindcss": "^3",
+    "vite-plugin-vuetify": "^2.0.3",
+    "vue": "^3.2.13",
+    "vue-router": "^4.0.3",
+    "vue3-google-login": "^2.0.26",
+    "vuetify": "^3.5.17",
+    "vuex": "^4.0.0"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "~5.0.0",
+    "@vue/cli-plugin-pwa": "~5.0.0",
+    "@vue/cli-plugin-router": "~5.0.0",
+    "@vue/cli-plugin-typescript": "~5.0.0",
+    "@vue/cli-plugin-vuex": "~5.0.0",
+    "@vue/cli-service": "~5.0.0",
+    "sass": "^1.32.7",
+    "sass-loader": "^12.0.0",
+    "typescript": "~4.5.5",
+    "vue-cli-plugin-tailwind": "^3.0.0"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/vue3-essential",
+      "@vue/typescript/recommended"
+    ],
+    "parserOptions": {
+      "ecmaVersion": 2020
+    },
+    "rules": {}
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "not ie 11"
+  ]
+}

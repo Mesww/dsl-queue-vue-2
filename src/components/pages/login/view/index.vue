@@ -10,13 +10,12 @@ import Googlebutton from '../widget/loginbutton.vue';
 import { googleSdkLoaded } from 'vue3-google-login';
 import axios from 'axios';
 const google_client_id = process.env.VUE_APP_GOOGLE_CLIENT_ID;
-const google_client_secret = process.env.VUE_APP_GOOGLE_CLIENT_SECRET;
-console.log(google_client_id);
-function alerts() {
-    alert("test");
-}
+// console.log(google_client_id);
+// function alerts() {
+//     alert("test");
+// }
 async function login() {
-    alert(google_client_id);
+    // alert(google_client_id);
     googleSdkLoaded((google:any) =>{
     google.accounts.oauth2.initCodeClient({
         client_id: google_client_id,

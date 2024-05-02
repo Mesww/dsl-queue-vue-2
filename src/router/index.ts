@@ -2,6 +2,14 @@ import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 import StudentView from "../pages/student/index.vue";
 import LoginView from "../pages/login/index.vue";
 import AdminView from "../pages/admin/index.vue";
+import TeacherView from "../pages/teacher/index.vue";
+import TeacherHome from "../pages/teacher/home.vue";
+import TeacherDashboard from "../pages/teacher/dashboard.vue";
+import StudentMain from "../pages/student/main.vue";
+import StudentSatisfaction from "../pages/student/satisfaction.vue";
+import AdminHome from "../pages/admin/home.vue";
+import AdminHistory from "../pages/admin/history.vue";
+import AdminConfig from "../pages/admin/config.vue";
 
 import axios from "axios";
 import { useCookies } from "vue3-cookies";
@@ -11,7 +19,52 @@ const { cookies } = useCookies();
 const routes: Array<RouteRecordRaw> = [
   { path: "/", name: "root", component: LoginView },
   { path: "/student", name: "student", component: StudentView },
-  { path: "/admin", name: "admin", component: AdminView },
+  { path: "/student/main", name: "studentmain", component: StudentMain },
+  {
+    path: "/student/statisfaction",
+    name: "studentstatisfaction",
+    component: StudentSatisfaction,
+  },
+
+  {
+    path: "/admin",
+    name: "admin",
+    component: AdminView,
+    children: [
+      {
+        path: "/admin/home",
+        name: "adminhome",
+        component: AdminHome,
+      },
+      {
+        path: "/admin/history",
+        name: "adminhistory",
+        component: AdminHistory,
+      },
+      {
+        path: "/admin/config",
+        name: "adminconfig",
+        component: AdminConfig,
+      },
+    ],
+  },
+  {
+    path: "/teacher",
+    name: "teacher",
+    component: TeacherView,
+    children: [
+      {
+        path: "/teacher/home",
+        name: "teacherhome",
+        component: TeacherHome,
+      },
+      {
+        path: "/teacher/dashboard",
+        name: "teacherdashboard",
+        component: TeacherDashboard,
+      },
+    ],
+  },
 ];
 
 const router = createRouter({
@@ -34,17 +87,28 @@ function parseJwt(token: string) {
   return JSON.parse(jsonPayload);
 }
 async function refeshToken(refresh: string) {
-  const res = await axios.post("http://localhost:8888/login/refresh", null, {
-    headers: {
-      Authorization: `Bearer ${refresh}`,
-    },
-  });
-  const token = res.data;
-  cookies.remove("accesstoken");
-  cookies.remove("refreshtoken");
+  try {
+    const res = await axios.post(
+      `http://localhost:${process.env.VUE_APP_BACK_PORT}/login/refresh`,
+      null,
+      {
+        headers: {
+          Authorization: `Bearer ${refresh}`,
+        },
+      }
+    );
+    if (res.status !== 200) {
+      throw Error(res.statusText);
+    }
+    const token = res.data;
+    cookies.remove("accesstoken");
+    cookies.remove("refreshtoken");
 
-  cookies.set("accesstoken", token.access_token);
-  cookies.set("refreshtoken", token.refresh_token);
+    cookies.set("accesstoken", token.access_token);
+    cookies.set("refreshtoken", token.refresh_token);
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 async function isAuthenticated() {
@@ -78,6 +142,33 @@ async function isAuthenticated() {
   return true;
 }
 
+async function isReserve() {
+  const accesstoken = cookies.get("accesstoken");
+  const access_token_extract = parseJwt(accesstoken);
+  const studentid = access_token_extract.email.split("@")[0];
+  try {
+    const userqueue = await axios.get(
+      `http://localhost:${process.env.VUE_APP_BACK_PORT}/queue/getQueueSpecific?studentID=${studentid}`
+    );
+    if (userqueue.status !== 200) {
+      throw Error(userqueue.statusText);
+    }
+
+    console.log(userqueue.data);
+
+    if (
+      userqueue.data === null ||
+      userqueue.data === undefined ||
+      userqueue.data.length < 1
+    ) {
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
 function isRole(role: string) {
   const accesstoken = cookies.get("accesstoken");
   const access_token_extract = parseJwt(accesstoken);
@@ -92,13 +183,14 @@ router.beforeEach(async (to, from, next) => {
   console.log("isAuthen", await isAuthenticated());
   const isAuth = await isAuthenticated();
   // ! check if path isn't "/" and authenticated
-  if (to.name !== "root" && !isAuth) {
+  if (to.name !== "root" && isAuth === false) {
     console.log("unauthenticated");
     // ! redirect to "/"
     next({ name: "root" });
-  }
-   else if(isAuth){
+  } else if (isAuth) {
     console.log("authenticated");
+    // const isreserve = await isReserve();
+    // console.log(isreserve);
     // console.log("isADMIN ", isRole("ADMIN"));
     if (to.name === "admin" && isRole("ADMIN") === false) {
       console.log("you aren't admin");
@@ -109,14 +201,24 @@ router.beforeEach(async (to, from, next) => {
       console.log("GET OUT!");
 
       next({ name: "root" });
+    } else if (to.name === "teacher" && isRole("TEACHER") === false) {
+      console.log("you aren't teacher");
+      next({ name: "root" });
+    }else if(await isReserve() === true){
+
+    } else if (to.name === "studentmain" && (await isReserve()) === false) {
+      console.log("you aren't reserve");
+      next({ name: "student" });
+    } else if (
+      to.name === "studentstatisfaction" &&
+      (await isReserve()) === false
+    ) {
+      console.log("you aren't reserve");
+      next({ name: "student" });
     }
-
-    
-
   }
-    console.log("unauthenticated");
-    next();
-    
+  console.log("unauthenticated");
+  next();
 });
 
 export default router;

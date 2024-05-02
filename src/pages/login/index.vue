@@ -1,18 +1,19 @@
 <template>
     <div
-    class="grid h-screen bg-cover bg-scroll md:grid-cols-3 lg:grid-cols-3 grid-rows-6"
+    class="grid h-screen bg-cover bg-scroll justify-center content-center "
     id="backgroundlogin"
   >
     <div
-      class="md:col-start-2 lg:col-start-2 row-start-2"
+      class=""
     >
       <div class="flex justify-center">
         <!-- <IconHome class="w-56 h-56" :fontControlled="false" /> -->
+        <v-img src="../../assets/DSL-01.png" class="element" cover ></v-img>
       </div>
   
       <div class="flex justify-center">
         <!-- <GoogleSignInButton @success="handleLoginSuccess" @error="handleLoginError"></GoogleSignInButton> -->
-        <Googlebutton @click="login"/>
+        <v-btn prepend-icon="mdi-google" color="red" @click="login"> Google</v-btn>
       </div>
     </div>
   </div>
@@ -27,7 +28,7 @@ import { useCookies } from "vue3-cookies";
 import router from "@/router";
 import Swal from 'sweetalert2';
 const { cookies } = useCookies();
-
+console.log(process.env.VUE_APP_BACK_PORT);
 const google_client_id = process.env.VUE_APP_GOOGLE_CLIENT_ID;
 // console.log(google_client_id);
 // function alerts() {
@@ -40,7 +41,7 @@ async function login() {
         client_id: google_client_id,
         // client_secret: google_client_secret
          scope: "email profile openid",
-            redirect_uri: "http://localhost:8888/auth/callback",
+            redirect_uri: `http://localhost:${process.env.VUE_APP_BACK_PORT}/auth/callback`,
             callback: (response: { code: any; }) => {
               if (response.code) {
                  sendCodeToBackend(response.code);
@@ -56,7 +57,7 @@ async function sendCodeToBackend(code:string) {
         const headers = {
           Authorization: code
         };
-        const response = await axios.post("http://localhost:8888/login/google", null, { headers });
+        const response = await axios.post(`http://localhost:${process.env.VUE_APP_BACK_PORT}/login/google`, null, { headers });
         const token = response.data;
         console.log("token: ", token);
         
@@ -74,9 +75,10 @@ async function sendCodeToBackend(code:string) {
             router.push({name:"student",replace:true})
             break;
           case "ADMIN":
-            router.push({name:"admin",replace:true})
+            router.push({name:"adminhome",replace:true})
             break;
-          case "teacher":
+          case "TEACHER":
+            router.push({name:"teacherhome",replace:true})
             break;
           default:
             throw Error("Role not found");
@@ -115,5 +117,19 @@ function parseJwt(token: string) {
   background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
     url("~/src/assets/background.png");
   height: 100vh;
+}
+
+.element{
+  width:400px
+}
+@media screen and (max-width: 370px) {
+  .element{
+    width: 200px;
+  }
+}
+@media screen and (max-width: 768px) {
+  .element{
+    width: 300px;
+  }
 }
 </style>

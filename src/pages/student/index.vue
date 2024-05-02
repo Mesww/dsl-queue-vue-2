@@ -23,17 +23,24 @@
 </template>
 
 <script setup lang="ts">
+
+import { useCookies } from "vue3-cookies";
+
+const { cookies } = useCookies();
 import logoutbutton from "../../components/student/index.logout.button.vue";
 import navbar from "../../components/student/index.navbar.vue";
 import Swal from "sweetalert2";
+import axios from "axios";
+import router from "@/router";
 async function popUp() {
   const { value: selects } = await Swal.fire({
     title: "ยื่นยันคำขอ",
+    reverseButtons: true,
     input: "select",
     inputOptions: {
-      ONE: "ลักษณะที่ 1",
-      TWO: "ลักษณะที่ 2",
-      OTHER: "อื่น ๆ",
+      ONE: "กยศ. ลักษณะที่ 1",
+      TWO: "กรอ. ลักษณะที่ 2",
+      OTHER: "ประเภทอื่น ๆ",
     },
     color: "#191771",
     confirmButtonColor: "#191771",
@@ -55,9 +62,49 @@ async function popUp() {
 
   if (selects) {
     console.log(selects);
-    // await createQueue(selects, studentID);
+    await createQueue(selects);
   }
 }
+
+async function createQueue(selects: string) {
+
+  const accesstoken = cookies.get("accesstoken");
+  const access_token_extract = parseJwt(accesstoken);
+  const studentID = access_token_extract.email.split("@")[0];
+  console.log(selects + studentID);
+  try {
+    const response = await axios.post(`http://localhost:${process.env.VUE_APP_BACK_PORT}/queue/getqueueaddQueue`, {
+       type: selects, studentID: studentID 
+    });
+    console.log(response);
+    if (response.status === 200) {
+      console.log(response.data);
+      console.log("CREATED");
+      router.push({name:"studentmain",replace:true});
+    } else {
+      throw Error("Connection error");
+    }
+  } catch (error) {
+    console.error(error.message);
+  }
+}
+
+function parseJwt(token: string) {
+  var base64Url = token.split(".")[1];
+  var base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+  var jsonPayload = decodeURIComponent(
+    window
+      .atob(base64)
+      .split("")
+      .map(function (c) {
+        return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+      })
+      .join("")
+  );
+  return JSON.parse(jsonPayload);
+}
+
+
 </script>
 
 <style lang="scss" scoped>

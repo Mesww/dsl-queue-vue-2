@@ -27,6 +27,7 @@ async function logout() {
   confirmButtonText: "ยืนยัน!",
   cancelButtonText:'ยกเลิก',
   iconColor:'#ED1C24',
+  reverseButtons: true,
   color:'#191771'
 })
     if (isConfirmed) {

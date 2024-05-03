@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { onMounted, ref} from "vue";
+import { onMounted, ref } from "vue";
 import navbars from "../../components/student/satisfaction.navbar.vue";
 import Swal from "sweetalert2";
 import axios from "axios";
@@ -35,9 +35,9 @@ function parseJwt(token: string) {
 
 async function getMyqueue() {
   try {
-    
+
     const res = await axios.get(`http://localhost:${process.env.VUE_APP_BACK_PORT}/queue/getQueueSpecific?studentID=${studentID}`);
-    if (res.status!== 200) {
+    if (res.status !== 200) {
       throw Error(res.statusText);
     }
     myqueues.value = res.data[0];
@@ -48,51 +48,52 @@ async function getMyqueue() {
 }
 
 async function submit() {
-    // console.log('test');
-    console.log(selectedValue.value);
-    await Swal.fire({
-      icon: "success",
-      title: "ขอบคุณที่มาใช้บริการ",
-      showConfirmButton: false,
-      timer:1500,
-      
-    })
-    await createHistory();
-    try {
-      const res = await axios.delete(`http://localhost:${process.env.VUE_APP_BACK_PORT}/queue/getqueuedeleteQueue?queueid=${myqueues.value.queueid}`);
-        if (res.status !== 200) {
-          // navigateTo("/student/", { replace: true });
-          throw Error(res.statusText);
-        }
-        router.push({name:"student",replace:true})
-      
-    } catch (error) {
-      console.error(error);
+  // console.log('test');
+  console.log(selectedValue.value);
+  await Swal.fire({
+    icon: "success",
+    title: "ขอบคุณที่มาใช้บริการ",
+    showConfirmButton: false,
+    timer: 1500,
+
+  })
+  await createHistory();
+  try {
+    const res = await axios.delete(`http://localhost:${process.env.VUE_APP_BACK_PORT}/queue/getqueuedeleteQueue?queueid=${myqueues.value.queueid}`);
+    if (res.status !== 200) {
+      // navigateTo("/student/", { replace: true });
+      throw Error(res.statusText);
     }
+    router.push({ name: "student", replace: true })
+
+  } catch (error) {
+    console.error(error);
   }
-  
-  async function createHistory() {
-    // console.log(userid.value + myqueues.value.type + myqueues.value.rate + myqueues.value.comment + myqueues.value.channel);
-    try {
-      const response = await axios.post(`http://localhost:${process.env.VUE_APP_BACK_PORT}/history/getHistoryCreate`, {
-         type: myqueues.value.type, studentid:myqueues.value.studentID, rate: selectedValue.value[0].value, comment: myqueues.value.comment, channel: myqueues.value.channel },
-      );
+}
+
+async function createHistory() {
+  // console.log(userid.value + myqueues.value.type + myqueues.value.rate + myqueues.value.comment + myqueues.value.channel);
+  try {
+    const response = await axios.post(`http://localhost:${process.env.VUE_APP_BACK_PORT}/history/getHistoryCreate`, {
+      type: myqueues.value.type, studentid: myqueues.value.studentID, rate: selectedValue.value[0].value, comment: myqueues.value.comment, channel: myqueues.value.channel
+    },
+    );
+    console.log(response);
+    if (response.status === 200) {
       console.log(response);
-      if (response.status === 200 ) {
-        console.log(response);
-        console.log("CREATED");
-        // setData("is_reserve", true);
-        // const queueid = useCookie('myqueueid');
-        // queueid.value = response.queueid;
-        // is_reserve.value = true;
-        // navigateTo("/student/main", { replace: true });
-      } else {
-        throw Error("Connection error");
-      }
-    } catch (error) {
-      console.error(error);
+      console.log("CREATED");
+      // setData("is_reserve", true);
+      // const queueid = useCookie('myqueueid');
+      // queueid.value = response.queueid;
+      // is_reserve.value = true;
+      // navigateTo("/student/main", { replace: true });
+    } else {
+      throw Error("Connection error");
     }
+  } catch (error) {
+    console.error(error);
   }
+}
 onMounted(getMyqueue);
 </script>
 
@@ -100,15 +101,11 @@ onMounted(getMyqueue);
   <div class="bg">
     <navbars />
     <div class="raiting flex flex-col justify-center items-center">
-      <div
-        class="flex justify-center"
-        v-for="(question, index) in selectedValue"
-        :key="index"
-      >
+      <div class="flex justify-center" v-for="(question, index) in selectedValue" :key="index">
         <div class="rounded-md bg-white box mt-5 p-5 d-flex">
           <div>
             <p>{{ index + 1 }}. {{ question.Question }}</p>
-            <div class="flex justify-between">
+            <!-- <div class="flex justify-between">
               <v-slider
               v-model="selectedValue[index].value"
                 :step="1"
@@ -118,18 +115,19 @@ onMounted(getMyqueue);
                 thumb-label="always"
               />
               <p>{{ selectedValue[index].value }}</p>
+            </div> -->
+            <div class="flex items-center">
+              <span v-for="star in 5" :key="star" @click="selectedValue[index].value = star">
+                <i
+                  :class="{ 'fas fa-star': star <= selectedValue[index].value, 'far fa-star': star > selectedValue[index].value }"></i>
+              </span>
             </div>
           </div>
         </div>
       </div>
       <div class="flex justify-center my-5">
-        <v-btn
-          rounded="xl"
-          class="submitButton"
-          icon="i-heroicons-arrow-right-circle-16-solid"
-          @click="submit"
-          >Submit</v-btn
-        >
+        <v-btn rounded="xl" class="submitButton" icon="i-heroicons-arrow-right-circle-16-solid"
+          @click="submit">Submit</v-btn>
       </div>
     </div>
   </div>
@@ -222,11 +220,14 @@ onMounted(getMyqueue);
   </script> -->
 
 <style lang="scss" scoped>
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
+
 .bg {
   background-color: #191771;
   height: 100vh;
   overflow: scroll;
 }
+
 .submitButton {
   background-color: #f1f5f9;
   color: #191771;
@@ -234,6 +235,7 @@ onMounted(getMyqueue);
   justify-content: center;
   width: 80vw;
 }
+
 .submitButton:hover {
   background-color: #ed1c24;
   color: #f1f5f9;
@@ -244,10 +246,29 @@ onMounted(getMyqueue);
   width: 80vw;
   color: #191771;
   border-radius: 1.5rem;
+
   .range {
     margin-top: auto;
     margin-bottom: auto;
     width: 60vw;
   }
+}
+
+.raiting .flex.items-center span {
+  font-size: 3rem;
+  color: #ffdd00;
+  /* เปลี่ยนสีเป็นเทา */
+  cursor: pointer;
+  transition: color 0.3s;
+  margin-right: 10px;
+}
+
+.raiting .flex.items-center span.fas.fa-star {
+  color: #ffdd00;
+  /* เปลี่ยนสีเป็นสีเหลืองเมื่อถูกเลือก */
+}
+
+.raiting .flex.items-center span:hover {
+  color: #ffdd00;
 }
 </style>

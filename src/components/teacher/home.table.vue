@@ -59,7 +59,7 @@ fetchQueue();
 
 
 const headers = [
-  { key: "queueid", title: "ลำดับ", align: "center" },
+  { key: "orders", title: "ลำดับ", align: "center" },
   { key: "datetime", title: "วันเวลา", align: "center" },
   { key: "type", title: "งานบริการ", align: "center" },
   { key: "studentID", title: "รหัสนักศึกษา", align: "center" },
@@ -95,11 +95,11 @@ console.log(queue.value);
 function convertType(type: string): string {
   switch (type) {
     case "ONE":
-      return "กยศ. (ลักษณะที่ 1)";
+      return "แบบคำขอกกู้ยืมเงิน";
     case "TWO":
-      return "กยศ. (ลักษณะที่ 2)";
+      return "สัญญากู้ยืมเงิน หรือ แบบยืนยันการเบิกเงินกู้ยืม";
     default:
-      return "กยศ. (อื่นๆ)";
+      return "ประเภทอื่น ๆ";
   }
 }
 

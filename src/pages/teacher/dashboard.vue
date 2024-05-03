@@ -113,13 +113,13 @@ async function getQueue() {
         }
       is_over.value = queue.data.length - 1;
       console.log(is_over.value);
-        queue.data.forEach((value: { channel: number; queueid: any }) => {
+        queue.data.forEach((value: { channel: number; orders: any }) => {
       if (value.channel === 1) {
-        channel1.value = value.queueid;
+        channel1.value = value.orders;
       } else if (value.channel === 2) {
-        channel2.value = value.queueid;
+        channel2.value = value.orders;
       } else if (value.channel === 3) {
-        channel3.value = value.queueid;
+        channel3.value = value.orders;
       }
       let lastqueue = queue.data.findLast(
       (item: { status: string }) => item.status === "PROCESS"
@@ -128,7 +128,7 @@ async function getQueue() {
       console.log(lastqueue?.channel);
 
       lastchannel = lastqueue.channel;
-      lastchannelqueueid.value = lastqueue.queueid;
+      lastchannelqueueid.value = lastqueue.orders;
     }
     });
     } catch (error) {

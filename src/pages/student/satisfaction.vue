@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { onMounted, ref} from "vue";
+import { onMounted, ref } from "vue";
 import navbars from "../../components/student/satisfaction.navbar.vue";
 import Swal from "sweetalert2";
 import axios from "axios";
@@ -12,7 +12,7 @@ const { cookies } = useCookies();
 const accesstoken = cookies.get("accesstoken");
 const access_token_extract = parseJwt(accesstoken);
 const studentID = access_token_extract.email.split("@")[0];
-let myqueues = ref([])
+let myqueues = ref([]);
 
 let selectedValue = ref([
   { Question: "โปรดให้คะแนนความพึงพอใจการให้บริการ", value: 1 },
@@ -35,64 +35,73 @@ function parseJwt(token: string) {
 
 async function getMyqueue() {
   try {
-    
-    const res = await axios.get(`http://localhost:${process.env.VUE_APP_BACK_PORT}/queue/getQueueSpecific?studentID=${studentID}`);
-    if (res.status!== 200) {
+    const res = await axios.get(
+      `http://localhost:${process.env.VUE_APP_BACK_PORT}/queue/getQueueSpecific?studentID=${studentID}`
+    );
+    if (res.status !== 200) {
       throw Error(res.statusText);
     }
     myqueues.value = res.data[0];
-
+    console.log(myqueues.value);
   } catch (error) {
     console.error(error);
   }
 }
 
 async function submit() {
-    // console.log('test');
-    console.log(selectedValue.value);
-    await Swal.fire({
-      icon: "success",
-      title: "ขอบคุณที่มาใช้บริการ",
-      showConfirmButton: false,
-      timer:1500,
-      
-    })
-    await createHistory();
-    try {
-      const res = await axios.delete(`http://localhost:${process.env.VUE_APP_BACK_PORT}/queue/getqueuedeleteQueue?queueid=${myqueues.value.queueid}`);
-        if (res.status !== 200) {
-          // navigateTo("/student/", { replace: true });
-          throw Error(res.statusText);
-        }
-        router.push({name:"student",replace:true})
-      
-    } catch (error) {
-      console.error(error);
+  // console.log('test');
+  console.log(selectedValue.value);
+  await Swal.fire({
+    icon: "success",
+    title: "ขอบคุณที่มาใช้บริการ",
+    showConfirmButton: false,
+    timer: 1500,
+  });
+  await createHistory();
+  try {
+    const res = await axios.delete(
+      `http://localhost:${process.env.VUE_APP_BACK_PORT}/queue/getqueuedeleteQueue?queueid=${myqueues.value.queueid}`
+    );
+    if (res.status !== 200) {
+      // navigateTo("/student/", { replace: true });
+      throw Error(res.statusText);
     }
+    router.push({ name: "student", replace: true });
+  } catch (error) {
+    console.error(error);
   }
-  
-  async function createHistory() {
-    // console.log(userid.value + myqueues.value.type + myqueues.value.rate + myqueues.value.comment + myqueues.value.channel);
-    try {
-      const response = await axios.post(`http://localhost:${process.env.VUE_APP_BACK_PORT}/history/getHistoryCreate`, {
-         type: myqueues.value.type, studentid:myqueues.value.studentID, rate: selectedValue.value[0].value, comment: myqueues.value.comment, channel: myqueues.value.channel },
-      );
-      console.log(response);
-      if (response.status === 200 ) {
-        console.log(response);
-        console.log("CREATED");
-        // setData("is_reserve", true);
-        // const queueid = useCookie('myqueueid');
-        // queueid.value = response.queueid;
-        // is_reserve.value = true;
-        // navigateTo("/student/main", { replace: true });
-      } else {
-        throw Error("Connection error");
+}
+
+async function createHistory() {
+  // console.log(userid.value + myqueues.value.type + myqueues.value.rate + myqueues.value.comment + myqueues.value.channel);
+  try {
+    const response = await axios.post(
+      `http://localhost:${process.env.VUE_APP_BACK_PORT}/history/getHistoryCreate`,
+      {
+        type: myqueues.value.type,
+        studentid: myqueues.value.studentID,
+        rate: selectedValue.value[0].value,
+        comment: myqueues.value.comment,
+        channel: myqueues.value.channel,
+        orders:myqueues.value.orders
       }
-    } catch (error) {
-      console.error(error);
+    );
+    console.log(response);
+    if (response.status === 200) {
+      console.log(response);
+      console.log("CREATED");
+      // setData("is_reserve", true);
+      // const queueid = useCookie('myqueueid');
+      // queueid.value = response.queueid;
+      // is_reserve.value = true;
+      // navigateTo("/student/main", { replace: true });
+    } else {
+      throw Error("Connection error");
     }
+  } catch (error) {
+    console.error(error);
   }
+}
 onMounted(getMyqueue);
 </script>
 
@@ -110,7 +119,7 @@ onMounted(getMyqueue);
             <p>{{ index + 1 }}. {{ question.Question }}</p>
             <div class="flex justify-between">
               <v-slider
-              v-model="selectedValue[index].value"
+                v-model="selectedValue[index].value"
                 :step="1"
                 max="5"
                 min="1"
@@ -135,91 +144,6 @@ onMounted(getMyqueue);
   </div>
 </template>
 
-<!-- <script lang="ts" setup>
-  import Swal from "sweetalert2";
-  import "animate.css";
-  
-  console.log(userid.value);
-  const {data:user} = await useFetch(`/api/user/user?userid=${userid.value}`);
-  console.log(user.value);
-  
-  
-  const studentID = user.value?.studentid;
-  const { data: myqueues, pending } = await useLazyAsyncData<{
-    queueid: number;
-    datetime: string;
-    studentID: string;
-    type: string;
-    orders: number;
-    channel: string;
-    status: string;
-    rate: number;
-    comment: string;
-  }>(
-    "queue",
-    () =>
-      $fetch("/api/queue/queueDataspecific", {
-        method: "post",
-        body: {
-          studentID: studentID,
-        },
-      })
-  
-  );
-  
-  let selectedValue = ref([
-    { Question: "โปรดให้คะแนนความพึงพอใจการให้บริการ", value: 0 },
-  ]);
-  // console.log(value.model-value);
-  // import { IncStudentsRatingform } from '#build/components';
-  async function submit() {
-    // console.log('test');
-    console.log(selectedValue.value);
-    await Swal.fire({
-      icon: "success",
-      title: "ขอบคุณที่มาใช้บริการ",
-      showConfirmButton: false,
-      timer: 1500,
-      timerProgressBar: true,
-    })
-    await createHistory();
-    const res = await $fetch('/api/queue/queueDelete',{
-        method:"DELETE",
-        body:{
-          queueid: parseInt(myqueueid.value)
-        }
-      });
-      if (res === "Delete!") {
-        myqueueid.value = null;
-        is_reserve.value = null;
-        navigateTo("/student/", { replace: true });
-      }
-  }
-  
-  async function createHistory() {
-    console.log(userid.value + myqueues.value.type + myqueues.value.rate + myqueues.value.comment + myqueues.value.channel);
-    try {
-      const response = await $fetch("/api/history/historyCreate", {
-        method: "post",
-        body: { type: myqueues.value.type, studentid:myqueues.value.studentID, rate: myqueues.value.rate, comment: myqueues.value.comment, channel: myqueues.value.channel },
-      });
-      console.log(response);
-      if (response !== null ) {
-        console.log(response);
-        console.log("CREATED");
-        // setData("is_reserve", true);
-        // const queueid = useCookie('myqueueid');
-        // queueid.value = response.queueid;
-        // is_reserve.value = true;
-        // navigateTo("/student/main", { replace: true });
-      } else {
-        throw Error("Connection error");
-      }
-    } catch (error) {
-      console.error(error.message);
-    }
-  }
-  </script> -->
 
 <style lang="scss" scoped>
 .bg {

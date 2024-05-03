@@ -163,6 +163,7 @@ async function isReserve() {
     ) {
       return false;
     }
+
     return true;
   } catch (error) {
     console.error(error);
@@ -189,9 +190,7 @@ router.beforeEach(async (to, from, next) => {
     next({ name: "root" });
   } else if (isAuth) {
     console.log("authenticated");
-    // const isreserve = await isReserve();
-    // console.log(isreserve);
-    // console.log("isADMIN ", isRole("ADMIN"));
+
     if (to.name === "admin" && isRole("ADMIN") === false) {
       console.log("you aren't admin");
 
@@ -204,8 +203,13 @@ router.beforeEach(async (to, from, next) => {
     } else if (to.name === "teacher" && isRole("TEACHER") === false) {
       console.log("you aren't teacher");
       next({ name: "root" });
-    }else if(await isReserve() === true){
-
+    } else if (
+      (await isReserve()) === true &&
+      to.name !== "studentmain" &&
+      to.name !== "studentstatisfaction"
+    ) {
+      console.log("you reserved");
+      next({ name: "studentmain" });
     } else if (to.name === "studentmain" && (await isReserve()) === false) {
       console.log("you aren't reserve");
       next({ name: "student" });

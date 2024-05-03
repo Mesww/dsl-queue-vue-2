@@ -39,15 +39,17 @@ let search = ref("");
 const column = ref([
   {
     key: "datetime",
-    title: "วันเวลา",
+    title: "วันเวลา", align: "center"
   },
   {
     key: "studentid",
     title: "รหัสนักศึกษา",
+    align: "center"
   },
   {
     key: "type",
     title: "งานบริการ",
+    align: "center"
   },
   // {
   //   key: "Sequence",
@@ -56,10 +58,12 @@ const column = ref([
   {
     key: "channel",
     title: "ช่องบริการ",
+    align: "center"
   },
   {
     key: "rate",
     title: "คะแนน",
+    align: "center"
   },
 ]);
 get_History();
@@ -104,11 +108,11 @@ console.log(todayHistory);
 }function convertType(type: string): string {
   switch (type) {
     case "ONE":
-      return "กยศ. (ลักษณะที่ 1)";
+      return "แบบคำขอกกู้ยืมเงิน";
     case "TWO":
-      return "กยศ. (ลักษณะที่ 2)";
+      return "สัญญากู้ยืมเงิน หรือ แบบยืนยันการเบิกเงินกู้ยืม";
     default:
-      return "กยศ. (อื่นๆ)";
+      return "ประเภทอื่น ๆ";
   }
 }
 

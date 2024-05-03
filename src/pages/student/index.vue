@@ -38,8 +38,8 @@ async function popUp() {
     reverseButtons: true,
     input: "select",
     inputOptions: {
-      ONE: "กยศ. ลักษณะที่ 1",
-      TWO: "กรอ. ลักษณะที่ 2",
+      ONE: "แบบคำขอกกู้ยืมเงิน",
+      TWO: "สัญญากู้ยืมเงิน หรือ แบบยืนยันการเบิกเงินกู้ยืม",
       OTHER: "ประเภทอื่น ๆ",
     },
     color: "#191771",
@@ -47,14 +47,14 @@ async function popUp() {
     cancelButtonColor: "#ED1C24",
     confirmButtonText: "ยืนยัน!",
     cancelButtonText: "ยกเลิก",
-    inputPlaceholder: "โปรดเลือกลักษณะ",
+    inputPlaceholder: "โปรดเลือกการบริการ",
     showCancelButton: true,
     inputValidator: (value: string) => {
       return new Promise((resolve) => {
         if (value.match("ONE") || value.match("TWO") || value.match("OTHER")) {
           resolve();
         } else {
-          resolve("ได้โปรดเลือกลักษณะ :)");
+          resolve("ได้โปรดเลือกการบริการ :)");
         }
       });
     },

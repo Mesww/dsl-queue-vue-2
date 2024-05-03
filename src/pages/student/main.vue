@@ -4,7 +4,7 @@
     <div class="max-w-6xl mx-auto px-10 mt-12 mb-6">
       <div class="flex justify-between">
         <div class="flex items-center">
-          <h1 class="textHeaders">คิวของคุณคือคิวที่ {{ myqueueid }}</h1>
+          <h1 class="textHeaders">คิวของคุณคือคิวที่ {{ myqueueorder }}</h1>
         </div>
         <div class="flex items-center">
           <span class="i-heroicons-clock w-8 h-8 mr-3"></span>
@@ -77,6 +77,7 @@ let channel2 = ref(0);
 let channel3 = ref(0);
 let leftqueue = ref(0);
 let myqueueid = ref(0);
+let myqueueorder = ref(0);
 let allqueue = ref();
 let status_ = ref("");
 let channel = ref(0);
@@ -119,6 +120,7 @@ async function getMyqueue() {
     }
     console.log(myqueue.data[0]);
     myqueueid.value = myqueue.data[0].queueid;
+    myqueueorder.value = myqueue.data[0].orders;
     console.log(myqueue.data[0].queueid);
     console.log(myqueue.data[0]);
     status_.value= myqueue.data[0].status;
@@ -152,13 +154,13 @@ async function getAllqueue() {
     if (queue.status !== 200) {
       throw Error(queue.statusText)
     }
-    queue.data.forEach((value: { channel: number; queueid: number }) => {
+    queue.data.forEach((value: { channel: number; orders: number }) => {
       if (value.channel === 1) {
-        channel1.value = value.queueid;
+        channel1.value = value.orders;
       } else if (value.channel === 2) {
-        channel2.value = value.queueid;
+        channel2.value = value.orders;
       } else if (value.channel === 3) {
-        channel3.value = value.queueid;
+        channel3.value = value.orders;
       }
     });
     // myqueueid.value = myqueue.data.queueid;

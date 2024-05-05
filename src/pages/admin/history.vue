@@ -58,11 +58,6 @@ const column = ref([
     title: "งานบริการ",
     align: "center",
   },
-  {
-    key: "orders",
-    titleE: "ลำดับ",
-    align: "center",
-  },
   { key: "status", title: "สถานะ", align: "center" },
   {
     key: "channel",

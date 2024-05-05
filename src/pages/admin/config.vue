@@ -271,7 +271,7 @@ if (formValues) {
  const alertDelete = async (index:any) => {
   const result = await Swal.fire({
     title: "คุณแน่ใจใช่ไหม?",
-    text: "คุณกำลังจะพักระบบ!",
+    text: "คุณกำลังจะนำเจ้าหน้าที่ออก!",
     icon: "warning",
     reverseButtons: true,
     showCancelButton: true,

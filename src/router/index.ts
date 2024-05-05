@@ -10,6 +10,7 @@ import StudentSatisfaction from "../pages/student/satisfaction.vue";
 import AdminHome from "../pages/admin/home.vue";
 import AdminHistory from "../pages/admin/history.vue";
 import AdminConfig from "../pages/admin/config.vue";
+import AdminScore from '../pages/admin/score.vue';
 
 import axios from "axios";
 import { useCookies } from "vue3-cookies";
@@ -45,6 +46,11 @@ const routes: Array<RouteRecordRaw> = [
         path: "/admin/config",
         name: "adminconfig",
         component: AdminConfig,
+      },
+      {
+        path: "/admin/score",
+        name: "adminscore",
+        component: AdminScore,
       },
     ],
   },

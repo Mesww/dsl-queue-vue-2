@@ -5,3 +5,8 @@ export interface User{
         role: string;
         channel: number;
 }
+
+export interface Teacherchannel{
+        channel: number;
+        orders: number;
+}

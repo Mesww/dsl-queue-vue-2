@@ -1,7 +1,7 @@
 <template>
   <div class="flex justify-center w-screen main-wrapper">
     <main
-      class="grid grid-cols-2 "
+      class="grid grid-cols-2 gap-4 "
     >
     <cards v-if="loading === false" card-color="white" :data="chartData[0]" />
     <cards v-if="loading === false" card-color="white" :data="chartData[1]" />

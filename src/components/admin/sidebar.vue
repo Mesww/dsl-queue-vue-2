@@ -22,6 +22,10 @@
           <v-icon class="iconsidebar">mdi-history</v-icon>
           <span class="text">รายงาน</span>
         </router-link>
+        <router-link to="/admin/score" class="button">
+          <v-icon class="iconsidebar">mdi-form-select</v-icon>
+          <span class="text">คะแนนแบบประเมิน</span>
+        </router-link>
         <router-link to="/admin/config" class="button">
           <v-icon class="iconsidebar">mdi-plus</v-icon>
           <span class="text">เพิ่มเจ้าหน้าที่</span>

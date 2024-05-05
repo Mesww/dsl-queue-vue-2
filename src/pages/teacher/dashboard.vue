@@ -6,73 +6,52 @@
       <!-- <div class="channel"> -->
       <div class="containers">
         <div class="channel-wrapper">
-          <div class="channel">
-            <div class="textchannel">ช่องรับบริการที่ 1</div>
-            <div class="blockchannel">
-              <v-img src="../../assets/Ellipse17.png" alt="Ellipse" />
-              
-              <v-img src="../../assets/image6.png" alt="Ellipse" />
-
-              <div class="textchannel">{{ channel1 }}</div>
+          <div
+            v-for="(teacher, index) in teachers"
+            :key="index"
+            class="channel"
+          >
+            <div class="textchannel">
+              ช่องรับบริการที่ {{ teacher.channel }}
             </div>
-          </div>
-
-          <div class="channel">
-            <div class="textchannel">ช่องรับบริการที่ 2</div>
             <div class="blockchannel">
               <v-img src="../../assets/Ellipse17.png" alt="Ellipse" />
 
               <v-img src="../../assets/image6.png" alt="Ellipse" />
 
-              <div class="textchannel">{{ channel2 }}</div>
-            </div>
-          </div>
-
-          <div class="channel">
-            <div class="textchannel">ช่องรับบริการที่ 3</div>
-            <div class="blockchannel">
-              <v-img src="../../assets/Ellipse17.png" alt="Ellipse" />
-
-              <v-img src="../../assets/image6.png" alt="Ellipse" />
-
-              <div class="textchannel">{{ channel3 }}</div>
+              <div class="textchannel">{{ channel[index] === undefined  || channel[index] === null ? 0 : channel[index].orders}}</div>
             </div>
           </div>
         </div>
-
         <div class="box-right">
           <div class="box-inside">
             <h1 class="channel-text">ช่องรับบริการที่ {{ lastchannel }}</h1>
           </div>
           <h1 class="q-text">คิวที่ {{ lastchannelqueueid }}</h1>
         </div>
-        
       </div>
-      <div v-if="is_over >= 250" class="text-250">จำนวนผู้ใช้บริการเกินกว่า 250 ท่าน</div>
+      <div v-if="is_over >= 250" class="text-250">
+        จำนวนผู้ใช้บริการเกินกว่า 250 ท่าน
+      </div>
     </main>
   </div>
-  <!-- <div class="app bg-black h-screen">
-        <Sidebar :items="sidebarItems">
-          <template #item="{ item }">
-            <nuxt-link :to="item.to">{{ item.text }}</nuxt-link>
-          </template>
-  </Sidebar>
-  </div> -->
 </template>
 <script setup lang="ts">
 import Swal from "sweetalert2";
 import "animate.css";
-import { useIntervalFn} from "@vueuse/core";
-import { ref,onMounted } from "vue";
+import { useIntervalFn } from "@vueuse/core";
+import { ref, onMounted, Ref } from "vue";
 import axios from "axios";
+import { Teacherchannel, User } from "@/models/User";
 
-
-let channel1 = ref(0);
-let channel2 = ref(0);
-let channel3 = ref(0);
+let teachers: Ref<User[]> = ref([]);
+let channel: Ref<Teacherchannel[]> = ref([{
+  channel:0,
+  orders:0
+}]);
 let lastchannel = "";
 let lastchannelqueueid = ref(0);
-let is_over = ref(0)
+let is_over = ref(0);
 
 // getQueue();
 function convertChannel(data: string) {
@@ -105,44 +84,69 @@ function updateQueueClass(allQueues: any[]) {
     }
   }
 }
-async function getQueue() {
-    try {
-        const queue = await axios.get(`http://localhost:${process.env.VUE_APP_BACK_PORT}/queue/getQueue`);
-        if (queue.status !== 200) {
-            throw Error(queue.statusText);
-        }
-      is_over.value = queue.data.length - 1;
-      console.log(is_over.value);
-        queue.data.forEach((value: { channel: number; orders: any }) => {
-      if (value.channel === 1) {
-        channel1.value = value.orders;
-      } else if (value.channel === 2) {
-        channel2.value = value.orders;
-      } else if (value.channel === 3) {
-        channel3.value = value.orders;
-      }
-      let lastqueue = queue.data.findLast(
-      (item: { status: string }) => item.status === "PROCESS"
-    );
-    if (lastqueue !== undefined && lastqueue !== null) {
-      console.log(lastqueue?.channel);
 
-      lastchannel = lastqueue.channel;
-      lastchannelqueueid.value = lastqueue.orders;
+async function getTeacher() {
+  try {
+    const res = await axios.get(
+      `http://localhost:${process.env.VUE_APP_BACK_PORT}/users/getAlluser`
+    );
+    if (res.status !== 200) {
+      throw Error(res.statusText);
     }
+    teachers.value = res.data.filter((value: User) => {
+      return value.role === "TEACHER";
     });
-    } catch (error) {
-        console.error(error);
+    console.log(teachers.value);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+async function getQueue() {
+  try {
+    const queue = await axios.get(
+      `http://localhost:${process.env.VUE_APP_BACK_PORT}/queue/getQueue`
+    );
+    if (queue.status !== 200) {
+      throw Error(queue.statusText);
     }
+    is_over.value = queue.data.length - 1;
+    let x:Teacherchannel[] = [];
+    console.log(is_over.value);
+    teachers.value.forEach((teacher) => {
+      console.log("Teacher ",teacher.channel);  
+      queue.data.forEach((queues: { channel: number; orders: number }) => {
+        console.log("Queue ",queues.channel);
+        if (queues.channel === teacher.channel) {
+          console.log("test");
+          x.push(queues);
+        }
+        let lastqueue = queue.data.findLast(
+          (item: { status: string }) => item.status === "PROCESS"
+        );
+        if (lastqueue !== undefined && lastqueue !== null) {
+          console.log(lastqueue?.channel);
+
+          lastchannel = lastqueue.channel;
+          lastchannelqueueid.value = lastqueue.orders;
+        }
+      });
+    });
+    channel.value = x;
+
+    console.log("channel : ", channel.value);
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 onMounted(getQueue);
+onMounted(getTeacher);
 
 // Call getQueue() every 1 minute
 setInterval(getQueue, 5000);
 </script>
 <style lang="scss" scoped>
-
 * {
   margin: 0;
   padding: 0;

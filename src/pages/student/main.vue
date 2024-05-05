@@ -81,7 +81,7 @@ let myqueueorder = ref(0);
 let allqueue = ref();
 let status_ = ref("");
 let channel = ref(0);
-let timer = 7000;
+let timer = 3000;
 
 function parseJwt(token: string) {
   var base64Url = token.split(".")[1];

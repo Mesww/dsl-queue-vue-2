@@ -4,13 +4,13 @@
     <div class="flex justify-between">
       <v-img class="arrow" alt="Arrow" src="../../assets/Arrow1.png" />
       <div class="element-wrapper">
-          <v-img
+        <v-img
           id="popupTrigger"
-            class="element"
-            alt="Element"
-            src="../../assets/DSL-01.png"
-            @click="popUp"
-          />
+          class="element"
+          alt="Element"
+          src="../../assets/DSL-01.png"
+          @click="popUp"
+        />
       </div>
       <v-img class="img" alt="Arrow" src="../../assets/Arrow2.png"></v-img>
     </div>
@@ -23,7 +23,6 @@
 </template>
 
 <script setup lang="ts">
-
 import { useCookies } from "vue3-cookies";
 
 const { cookies } = useCookies();
@@ -32,6 +31,7 @@ import navbar from "../../components/student/index.navbar.vue";
 import Swal from "sweetalert2";
 import axios from "axios";
 import router from "@/router";
+import { comment } from "postcss";
 async function popUp() {
   const { value: selects } = await Swal.fire({
     title: "ยื่นยันคำขอ",
@@ -66,26 +66,63 @@ async function popUp() {
   }
 }
 
-async function createQueue(selects: string) {
+async function createHistory(queue: {
+  studentid: string;
+  type: string;
+  orders: number;
+  queueid: number;
+}) {
+  try {
+    const response = await axios.post(
+      `http://localhost:${process.env.VUE_APP_BACK_PORT}/history/getHistoryCreate`,
+      {
+        studentid: queue.studentid,
+        type: queue.type,
+        rate: 0,
+        channel: 0,
+        orders: queue.orders,
+        comment: "",
+        status: "WAIT",
+        queueid: queue.queueid,
+      }
+    );
+    if (response.status !== 200) {
+      throw Error(response.statusText);
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
 
+async function createQueue(selects: string) {
   const accesstoken = cookies.get("accesstoken");
   const access_token_extract = parseJwt(accesstoken);
   const studentID = access_token_extract.email.split("@")[0];
   console.log(selects + studentID);
   try {
-    const response = await axios.post(`http://localhost:${process.env.VUE_APP_BACK_PORT}/queue/getqueueaddQueue`, {
-       type: selects, studentID: studentID 
-    });
+    const response = await axios.post(
+      `http://localhost:${process.env.VUE_APP_BACK_PORT}/queue/getqueueaddQueue`,
+      {
+        type: selects,
+        studentID: studentID,
+      }
+    );
     console.log(response);
     if (response.status === 200) {
       console.log(response.data);
       console.log("CREATED");
-      router.push({name:"studentmain",replace:true});
+      await createHistory({
+        studentid: studentID,
+        type: selects,
+        orders: response.data.orders,
+        queueid:response.data.queueid
+      });
+      router.push({ name: "studentmain", replace: true });
     } else {
       throw Error("Connection error");
     }
   } catch (error) {
-    console.error(error.message);
+    console.error(error);
   }
 }
 
@@ -103,8 +140,6 @@ function parseJwt(token: string) {
   );
   return JSON.parse(jsonPayload);
 }
-
-
 </script>
 
 <style lang="scss" scoped>

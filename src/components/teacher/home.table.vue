@@ -58,6 +58,8 @@ fetchQueue();
 },timer);
 
 
+
+
 const headers = [
   { key: "orders", title: "ลำดับ", align: "center" },
   { key: "datetime", title: "วันเวลา", align: "center" },
@@ -71,7 +73,7 @@ console.log(process.env.VUE_APP_BACK_PORT);
 async function fetchQueue() {
   try {
     const res = await axios.get(
-      `http://localhost:${process.env.VUE_APP_BACK_PORT}/queue/getqueueDataspecificstatusrefuse?status1=FINISH&status2=SKIP`
+      `http://localhost:${process.env.VUE_APP_BACK_PORT}/queue/getqueueDataspecificstatusrefuse?status1=FINISH&status2=SKIP&status3=CANCEL`
     );
     if (res.status === 200) {
       totalAllqueue.value = await res.data.length;
@@ -90,6 +92,21 @@ async function fetchQueue() {
     loading.value = false; // Set loading to false after data is fetched
   }
 }
+
+async function updateHistory(queueid:number,status:string) {
+  try {
+    const res= await axios.put(`http://localhost:${process.env.VUE_APP_BACK_PORT}/history/getHistoryUpdate`,{
+      queueid:queueid,
+      status:status
+    })
+    if ( res.status !== 200) {
+      throw Error(res.statusText)
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
+
 console.log(queue.value);
 
 function convertType(type: string): string {
@@ -149,6 +166,7 @@ async function callAction(row: { queueid: number }) {
       );
       // console.log(response);
       if (res.status === 200) {
+        updateHistory(row.queueid,"PROCESS");
         // find index qeueus
         const updatedItemIndex =
           queue.value?.findIndex((data) => data.queueid === row.queueid) ?? -1;
@@ -182,7 +200,9 @@ async function skipAction(row: { queueid: number }) {
         status: "SKIP",
       }
     );
+
     if (res.status === 200) {
+      await updateHistory(row.queueid,"SKIP");
       console.log("put OK");
   console.log(await checkIs_called());
 
@@ -213,8 +233,8 @@ async function completeAction(row: { queueid: number }) {
     );
     if (res.status === 200) {
       console.log("put OK");
+      await updateHistory(row.queueid,"FINISH");
       await fetchQueue();
-      // await refreshNuxtData("queueconvert");
     } else {
       throw Error(res.statusText);
     }

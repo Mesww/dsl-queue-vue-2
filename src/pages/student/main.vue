@@ -170,7 +170,19 @@ async function getAllqueue() {
   }
 }
 
-
+async function updateHistory(queueid:number,status:string) {
+  try {
+    const res= await axios.put(`http://localhost:${process.env.VUE_APP_BACK_PORT}/history/getHistoryUpdate`,{
+      queueid:queueid,
+      status:status
+    })
+    if ( res.status !== 200) {
+      throw Error(res.statusText)
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
 
 async function getLeftqueue() {
   try {
@@ -204,6 +216,7 @@ async function cancelqueue() {
     try {
       const res = await axios.delete(`http://localhost:${process.env.VUE_APP_BACK_PORT}/queue/getqueuedeleteQueue?queueid=${myqueueid.value}`);
       if (res.status === 200) {
+        await updateHistory(myqueueid.value,"CANCEL");
         router.push({name:"student",replace:true});
         return;
       }

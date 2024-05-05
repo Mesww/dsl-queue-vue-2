@@ -57,7 +57,7 @@ async function submit() {
     showConfirmButton: false,
     timer: 1500,
   });
-  await createHistory();
+  await updateHistory(myqueues.value.queueid,selectedValue.value[0].value);
   try {
     const res = await axios.delete(
       `http://localhost:${process.env.VUE_APP_BACK_PORT}/queue/getqueuedeleteQueue?queueid=${myqueues.value.queueid}`
@@ -72,36 +72,19 @@ async function submit() {
   }
 }
 
-async function createHistory() {
-  // console.log(userid.value + myqueues.value.type + myqueues.value.rate + myqueues.value.comment + myqueues.value.channel);
+async function updateHistory(queueid:number,rate:number) {
   try {
-    const response = await axios.post(
-      `http://localhost:${process.env.VUE_APP_BACK_PORT}/history/getHistoryCreate`,
-      {
-        type: myqueues.value.type,
-        studentid: myqueues.value.studentID,
-        rate: selectedValue.value[0].value,
-        comment: myqueues.value.comment,
-        channel: myqueues.value.channel,
-        orders:myqueues.value.orders
-      }
-    );
-    console.log(response);
-    if (response.status === 200) {
-      console.log(response);
-      console.log("CREATED");
-      // setData("is_reserve", true);
-      // const queueid = useCookie('myqueueid');
-      // queueid.value = response.queueid;
-      // is_reserve.value = true;
-      // navigateTo("/student/main", { replace: true });
-    } else {
-      throw Error("Connection error");
+    const res= await axios.put(`http://localhost:${process.env.VUE_APP_BACK_PORT}/history/getHistoryUpdate`,{
+      queueid:queueid,
+      rate:rate
+    })
+    if ( res.status !== 200) {
+      throw Error(res.statusText)
     }
   } catch (error) {
     console.error(error);
   }
-}
+};
 onMounted(getMyqueue);
 </script>
 
@@ -118,14 +101,9 @@ onMounted(getMyqueue);
           <div>
             <p>{{ index + 1 }}. {{ question.Question }}</p>
             <div class="flex justify-between">
-              <v-slider
-                v-model="selectedValue[index].value"
-                :step="1"
-                max="5"
-                min="1"
-                show-ticks="always"
-                thumb-label="always"
-              />
+              <div>
+                <v-icon v-for="n in 5" :key="n" @click="question.value = n" :color="n <= question.value ? 'yellow' : 'main'">mdi-star</v-icon>
+              </div>
               <p>{{ selectedValue[index].value }}</p>
             </div>
           </div>

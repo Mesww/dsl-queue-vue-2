@@ -15,9 +15,15 @@
         ></v-text-field>
       </div>
       <div class="abutton">
-        <button class="btn" @click="getAllhistory">รายการผู้รับบริการทั้งหมด</button>
-        <button class="btn" @click="getHistoryMonth">รายการผู้รับบริการ (เดือนนี้)</button>
-        <button class="btn" @click="getHistoryToday">รายการผู้รับบริการ (วันนี้)</button>
+        <button class="btn" @click="getAllhistory">
+          รายการผู้รับบริการทั้งหมด
+        </button>
+        <button class="btn" @click="getHistoryMonth">
+          รายการผู้รับบริการ (เดือนนี้)
+        </button>
+        <button class="btn" @click="getHistoryToday">
+          รายการผู้รับบริการ (วันนี้)
+        </button>
       </div>
       <!-- ตารางข้อมูล -->
 
@@ -39,31 +45,34 @@ let search = ref("");
 const column = ref([
   {
     key: "datetime",
-    title: "วันเวลา", align: "center"
+    title: "วันเวลา",
+    align: "center",
   },
   {
     key: "studentid",
     title: "รหัสนักศึกษา",
-    align: "center"
+    align: "center",
   },
   {
     key: "type",
     title: "งานบริการ",
-    align: "center"
+    align: "center",
   },
-  // {
-  //   key: "Sequence",
-  //   label: "ลำดับ",
-  // },
+  {
+    key: "orders",
+    titleE: "ลำดับ",
+    align: "center",
+  },
+  { key: "status", title: "สถานะ", align: "center" },
   {
     key: "channel",
     title: "ช่องบริการ",
-    align: "center"
+    align: "center",
   },
   {
     key: "rate",
     title: "คะแนน",
-    align: "center"
+    align: "center",
   },
 ]);
 get_History();
@@ -90,22 +99,23 @@ async function get_History() {
   }
 }
 
-import { format } from 'date-fns';
+import { format } from "date-fns";
 
 async function getHistoryToday() {
   const today = new Date();
-  const todayString = format(today, 'yyyy-MM-dd');
-  
+  const todayString = format(today, "yyyy-MM-dd");
+
   // Filter the existing history array to get entries for today
-  const todayHistory = history.value.filter(entry => {
+  const todayHistory = history.value.filter((entry) => {
     const entryDate = new Date(entry.datetime);
-    const entryDateString = format(entryDate, 'yyyy-MM-dd');
+    const entryDateString = format(entryDate, "yyyy-MM-dd");
     return entryDateString === todayString;
   });
-console.log(todayHistory);
+  console.log(todayHistory);
   // Update the history array with today's entries
   history.value = todayHistory;
-}function convertType(type: string): string {
+}
+function convertType(type: string): string {
   switch (type) {
     case "ONE":
       return "แบบคำขอกกู้ยืมเงิน";
@@ -125,7 +135,7 @@ function exportToCSV() {
   link.click();
 }
 
-async function getAllhistory(){
+async function getAllhistory() {
   history.value = allhistory.value;
   console.log(history.value);
 }
@@ -134,14 +144,18 @@ async function getHistoryMonth() {
   const today = new Date();
   const currentMonth = today.getMonth() + 1; // Adding 1 because getMonth() returns zero-based month index
   const currentYear = today.getFullYear();
-  const currentMonthString = `${currentYear}-${currentMonth.toString().padStart(2, '0')}`; // Format: "YYYY-MM"
+  const currentMonthString = `${currentYear}-${currentMonth
+    .toString()
+    .padStart(2, "0")}`; // Format: "YYYY-MM"
 
   // Filter the existing history array to get entries for the current month
-  const currentMonthHistory = allhistory.value.filter(entry => {
+  const currentMonthHistory = allhistory.value.filter((entry) => {
     const entryDate = new Date(entry.datetime);
     const entryMonth = entryDate.getMonth() + 1; // Adding 1 because getMonth() returns zero-based month index
     const entryYear = entryDate.getFullYear();
-    const entryMonthString = `${entryYear}-${entryMonth.toString().padStart(2, '0')}`;
+    const entryMonthString = `${entryYear}-${entryMonth
+      .toString()
+      .padStart(2, "0")}`;
     return entryMonthString === currentMonthString;
   });
 

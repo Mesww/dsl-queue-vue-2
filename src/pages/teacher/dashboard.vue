@@ -4,7 +4,7 @@
     <main>
       <!-- <UButton variant="solid" >Button</UButton> -->
       <!-- <div class="channel"> -->
-      <div class="containers">
+      <div v-if="is_loading" class="containers">
         <div class="channel-wrapper">
           <div
             v-for="(teacher, index) in teachers"
@@ -15,11 +15,25 @@
               ช่องรับบริการที่ {{ teacher.channel }}
             </div>
             <div class="blockchannel">
-              <v-img src="../../assets/Ellipse17.png" alt="Ellipse" />
+              <v-icon
+                icon="mdi-account-tie"
+                class="mb-10"
+                style="font-size: 6rem"
+                color="white"
+                alt="Ellipse"
+              />
 
-              <v-img src="../../assets/image6.png" alt="Ellipse" />
+              <v-icon
+                icon="mdi-account"
+                style="font-size: 4rem"
+                color="white"
+                alt="Ellipse"
+              />
 
-              <div class="textchannel">{{ channel[index] === undefined  || channel[index] === null ? 0 : channel[index].orders}}</div>
+              <div class="textchannel" >
+                {{findQueue(teacher.channel)}}
+
+              </div>
             </div>
           </div>
         </div>
@@ -29,6 +43,13 @@
           </div>
           <h1 class="q-text">คิวที่ {{ lastchannelqueueid }}</h1>
         </div>
+      </div>
+      <div v-else-if="is_loading === false" class="containers">
+        <v-skeleton-loader
+          class="mx-auto border"
+          max-width="300"
+          type="card-avatar, actions"
+        ></v-skeleton-loader>
       </div>
       <div v-if="is_over >= 250" class="text-250">
         จำนวนผู้ใช้บริการเกินกว่า 250 ท่าน
@@ -43,15 +64,22 @@ import { useIntervalFn } from "@vueuse/core";
 import { ref, onMounted, Ref } from "vue";
 import axios from "axios";
 import { Teacherchannel, User } from "@/models/User";
+import { Queue } from "@/models/Queue";
 
 let teachers: Ref<User[]> = ref([]);
-let channel: Ref<Teacherchannel[]> = ref([{
-  channel:0,
-  orders:0
-}]);
+let channel: Ref<Teacherchannel[]> = ref([
+  {
+    channel: 0,
+    orders: 0,
+  },
+]);
+
+let allqueue: Ref<Queue[]> = ref([]);
+
 let lastchannel = "";
 let lastchannelqueueid = ref(0);
 let is_over = ref(0);
+let is_loading = ref(false);
 
 // getQueue();
 function convertChannel(data: string) {
@@ -84,7 +112,13 @@ function updateQueueClass(allQueues: any[]) {
     }
   }
 }
-
+let test: Teacherchannel[] = [];
+teachers.value.forEach((t)=>{
+ test = channel.value.filter((value) => {
+          return value.channel === t.channel ;
+  })
+})
+console.log(test);
 async function getTeacher() {
   try {
     const res = await axios.get(
@@ -105,25 +139,24 @@ async function getTeacher() {
 async function getQueue() {
   try {
     const queue = await axios.get(
-      `http://localhost:${process.env.VUE_APP_BACK_PORT}/queue/getQueue`
+      `http://localhost:${process.env.VUE_APP_BACK_PORT}/queue/getqueueDataspecificstatusrefuse?status1=FINISH&status2=SKIP&status3=CANCEL`
     );
     if (queue.status !== 200) {
       throw Error(queue.statusText);
     }
     is_over.value = queue.data.length - 1;
-    let x:Teacherchannel[] = [];
+    let x: Teacherchannel[] = [];
     console.log(is_over.value);
     teachers.value.forEach((teacher) => {
-      console.log("Teacher ",teacher.channel);  
+      console.log("Teacher ", teacher.channel);
       queue.data.forEach((queues: { channel: number; orders: number }) => {
-        console.log("Queue ",queues.channel);
-        if (queues.channel === teacher.channel) {
-          console.log("test");
-          x.push(queues);
-        }
+        console.log("Queue ", queues.channel);
+        
+
         let lastqueue = queue.data.findLast(
           (item: { status: string }) => item.status === "PROCESS"
         );
+
         if (lastqueue !== undefined && lastqueue !== null) {
           console.log(lastqueue?.channel);
 
@@ -132,13 +165,29 @@ async function getQueue() {
         }
       });
     });
-    channel.value = x;
-
+    
+    allqueue.value = queue.data;
+    console.log(is_loading.value);
+    if (channel.value.length > 0) {
+      is_loading.value = true;
+    }
     console.log("channel : ", channel.value);
   } catch (error) {
     console.error(error);
   }
 }
+
+function findQueue(channel:number) :number{
+  const allqueues =  allqueue.value.filter((value)=>{
+    return value.channel === channel && value.status === "PROCESS";
+  })
+  if (allqueues[0] === undefined) {
+    return 0;
+  }
+  console.log(allqueues);
+  return allqueues[0].orders;
+}
+
 
 onMounted(getQueue);
 onMounted(getTeacher);
@@ -191,9 +240,10 @@ button {
       padding: 1.5rem 2rem;
       width: 10rem;
       height: 22rem;
+      text-align: center;
     }
 
-    v-img {
+    .blockchannel v-icon {
       width: 300px;
       height: 100px;
       padding: 1%;
@@ -209,10 +259,10 @@ button {
     }
 
     .textchannel {
-      margin-left: 0.7rem;
+      // margin-left: 0.7rem;
       margin-bottom: 0.5rem;
       font-family: "Inter-Bold", Helvetica;
-      color: #000000;
+      color: white;
       font-weight: 700;
       text-align: center;
     }
@@ -230,6 +280,7 @@ button {
   align-items: center;
   text-align: center;
   background-color: #2958c8;
+  color: white;
 
   .channel-text {
     padding: 1.5rem;

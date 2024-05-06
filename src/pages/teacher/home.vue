@@ -1,6 +1,10 @@
 <template>
   <div class=" m-auto ">
+    <div class="flex justify-between">
       <v-switch color="red" @click="breakAlert" v-model="tooglevalue" hide-details />
+      <div class="head items-center md:flex" > <h1 class=" text-white py-5 px-3"> ช่องบริการที่ {{myChannel}}</h1> </div>
+
+    </div>
       <queuetable />
   </div>
 </template>
@@ -9,7 +13,7 @@
 import Swal from "sweetalert2";
 import queuetable from "../../components/teacher/home.table.vue";
 import axios from "axios";
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 let tooglevalue = ref(true);
 async function breakAlert() {
   const result = await Swal.fire({
@@ -96,6 +100,44 @@ async function breakAlert() {
   tooglevalue.value = true;
   console.log(tooglevalue.value);
 }
+
+import { useCookies } from "vue3-cookies";
+let myChannel =ref(0);
+
+
+const { cookies } = useCookies();
+const accesstoken = cookies.get("accesstoken");
+const access_token_extract = parseJwt(accesstoken);
+function parseJwt(token: string) {
+  var base64Url = token.split(".")[1];
+  var base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+  var jsonPayload = decodeURIComponent(
+    window
+      .atob(base64)
+      .split("")
+      .map(function (c) {
+        return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+      })
+      .join("")
+  );
+  return JSON.parse(jsonPayload);
+}
+async function getMyuser() {
+  try {
+    const res = await axios.get(
+      `http://localhost:${process.env.VUE_APP_BACK_PORT}/users/getSpecificuser?email=${access_token_extract.email}`
+    );
+    if (res.status !== 200) {
+      throw Error(res.statusText);
+    }
+    myChannel.value = res.data.channel;
+    console.log("mychannel ", myChannel);
+  } catch (error) {
+    console.error(error);
+  }
+}
+onMounted(getMyuser);
+
 
 
 

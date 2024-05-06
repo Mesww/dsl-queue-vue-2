@@ -1,4 +1,13 @@
 <template>
+  <marquee v-if="isover" behavior="scroll" direction="right">
+    <div class="flex">
+      <h1 class="font-bold text-white mr-2">มีคิวที่รอเกิน </h1>
+      <h1 class="font-bold text-red-500 mr-2">10</h1>
+      <h1 class="font-bold text-white">นาทีแล้ว</h1>
+
+    </div>
+  </marquee>
+
   <v-data-table-server
     v-model:items-per-page="items_per_page"
     :headers="headers"
@@ -45,7 +54,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { onMounted, ref } from "vue";
 import { useCookies } from "vue3-cookies";
-let time = 0;
+let time = 60000;
 const { cookies } = useCookies();
 let myChannel = ref(0);
 let totalAllqueue = ref(0);
@@ -80,10 +89,10 @@ async function getMyuser() {
       `http://localhost:${process.env.VUE_APP_BACK_PORT}/users/getSpecificuser?email=${access_token_extract.email}`
     );
     if (res.status !== 200) {
-      throw Error(res.statusText)
+      throw Error(res.statusText);
     }
     myChannel.value = res.data.channel;
-    console.log("mychannel ",myChannel);
+    console.log("mychannel ", myChannel);
   } catch (error) {
     console.error(error);
   }
@@ -93,7 +102,7 @@ let inter = setInterval(() => {
   fetchQueue();
 }, timer);
 
-let outer ;
+let outer;
 
 const headers = [
   { key: "orders", title: "ลำดับ", align: "center" },
@@ -105,17 +114,43 @@ const headers = [
 ];
 fetchQueue();
 console.log(process.env.VUE_APP_BACK_PORT);
+
+let waitingqueue = [];
+
 async function fetchQueue() {
   try {
     const res = await axios.get(
       `http://localhost:${process.env.VUE_APP_BACK_PORT}/queue/getqueueDataspecificstatusrefuse?status1=FINISH&status2=SKIP&status3=CANCEL`
     );
+
     if (res.status === 200) {
       totalAllqueue.value = await res.data.length;
+
       queue.value = await res.data;
+
+      let x: any[] = [];
       queue.value.forEach((value) => {
         value.type = convertType(value.type);
+        if (value.status === "WAIT") {
+          x.push(value);
+        }
       });
+      waitingqueue = x;
+      console.log(waitingqueue);
+      if (waitingqueue.length >= 1) {
+        console.log(waitingqueue);
+        const queuebelow = new Date(waitingqueue[0].datetime).getTime();
+        console.log(new Date().getTime() > queuebelow + time);
+        
+        if (new Date().getTime() > queuebelow + time) {
+          isover.value = true;
+        } else {
+          isover.value = false;
+        }
+      }else{
+        isover.value = false;
+      }
+
       loading.value = true;
       console.log("allqueue : ", res.data.length);
     } else {
@@ -135,7 +170,7 @@ async function updateHistory(queueid: number, status: string) {
       {
         queueid: queueid,
         status: status,
-        channel: myChannel.value
+        channel: myChannel.value,
       }
     );
     if (res.status !== 200) {
@@ -187,7 +222,6 @@ async function checkIs_called() {
   }
 }
 
-
 async function callAction(row: { queueid: number }) {
   console.log(row.queueid);
   console.log(myChannel);
@@ -215,8 +249,7 @@ async function callAction(row: { queueid: number }) {
           queue.value[updatedItemIndex].channel = myChannel.value;
           // console.log(queue.value);
           // console.log("success");
-          out
-          }
+        }
       } else {
         throw Error(res.statusText);
       }

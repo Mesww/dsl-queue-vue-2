@@ -17,26 +17,40 @@ import cards from "../../components/admin/home.content.vue";
 import { ChartData, Charttype } from "../../models/Chart";
 // import { Queue } from '../../models/Queue';
 import { History } from "../../models/History";
+import { User } from "../../models/User";
 import { onMounted, Ref, ref } from "vue";
 let queueToday: Ref<History[]> = ref([]);
 let today = new Date(Date.now());
 let history : Ref<History[]> = ref([]);
 let loading = ref(true);
 let chartData: Ref<ChartData[]> = ref([]);
-async function getAllQueue() {
-  try {
-    const res = await axios.get(
+let teacher : Ref<User[]> = ref([])
+  let timer = 10000;
+
+  async function getqueue(){
+    try {
+      const res = await axios.get(
       `http://localhost:${process.env.VUE_APP_BACK_PORT}/history/getHistory`
     );
     if (res.status !== 200) {
       throw Error(res.statusText);
     }
+    return res;  
+    } catch (error) {
+      console.error(error);
+      
+    }
+  }
+
+  async function getAllQueue() {
+  try {
+    const res = await getqueue();
     console.log(res.data);
     history.value = res.data;
     res.data.forEach((value: History) => {
       value.datetime = new Date(value.datetime);
       // ! Queue today
-      if (value.datetime.getDate() === today.getDate()) {
+    if (value.datetime.getDate() === today.getDate()) {
         queueToday.value.push(value);
       }
     });
@@ -72,16 +86,41 @@ async function getAllQueue() {
     let rateone =0;
     let ratetwo =0;
     let ratethree =0;
+    console.log(one.length);
     for (let index = 0; index < history.value.length; index++) {
       if (history.value[index].type === "ONE") {
-        rateone = (history.value[index].rate + rateone)/one.length;
+        rateone = (history.value[index].rate + rateone)/ history.value.filter((value)=>{
+          return value.type === "ONE" && value.status === "FINISH";
+        }).length;
       }else if (history.value[index].type === "TWO"){
-        ratetwo = history.value[index].rate + ratetwo/two.length;
+        ratetwo = history.value[index].rate + ratetwo/history.value.filter((value)=>{
+          return value.type === "TWO" && value.status === "FINISH";
+        }).length;
       }else if (history.value[index].type ==="THREE"){
-        ratethree = history.value[index].rate + ratethree/three.length;
+        ratethree = history.value[index].rate + ratethree/history.value.filter((value)=>{
+          return value.type === "THREE" && value.status === "FINISH";
+        }).length;
       }
     }
     
+    // console.log(teacher.value);
+    const channelteacher:any[] =[];
+    let finishqueueTeacher:any[] = [];
+    teacher.value.forEach((value)=>{
+      if (channelteacher.includes(value.channel) ===  undefined || channelteacher.includes(value.channel) === false ) {
+        channelteacher.push(`ช่องบริการที่ ${value.channel}`);
+        console.log(channelteacher);
+      }
+    });
+    console.log('finish : ',finish);
+
+    finish.forEach((value)=>{
+      finishqueueTeacher[value.channel-1] = finish.filter((values)=>{
+        return values.channel === value.channel; 
+      }).length;
+    })
+
+    console.log(finishqueueTeacher);
 
     chartData.value = [
       {
@@ -102,7 +141,7 @@ async function getAllQueue() {
       },
       {
         type: Charttype.Doughnut,
-        title: `All queue today ${queueToday.value.length}`,
+        title: `คิวของวันนี้ ${queueToday.value.length} คิว`,
         labels: ["Finish", "Not Finish"],
         datasets: [
           {
@@ -114,7 +153,7 @@ async function getAllQueue() {
       },
       {
         type: Charttype.Line,
-        title: `Queue today ${queueToday.value.length}`,
+        title: `คิวของวันนี้ ${queueToday.value.length} คิว`,
         labels: [
           ` 08:00`,
           ` 09:00`,
@@ -154,13 +193,13 @@ async function getAllQueue() {
       },
       {
         type: Charttype.Pie,
-        title: "Test 4",
-        labels: ["January", "February", "March"],
+        title: "คิวที่เสร็จสิ้น",
+        labels: channelteacher,
         datasets: [
           {
-            data: [40, 20, 12],
-            label: "test bar 2",
-            backgroundColor: ["#191770"],
+            data: finishqueueTeacher,
+            label: "คิวที่สำเร็จ",
+            backgroundColor: ["#191770","red","#4175DF"],
           },
         ],
       },
@@ -168,6 +207,23 @@ async function getAllQueue() {
 
     loading.value = false;
     console.log(loading.value);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+async function getAllteacher() {
+  try {
+    const res = await axios.get(
+      `http://localhost:${process.env.VUE_APP_BACK_PORT}/users/getAlluser`
+    );
+    if (res.status !== 200) {
+      throw Error(res.statusText)
+    }
+    teacher.value = res.data.filter((value:User)=>{
+      return value.role === "TEACHER";
+    });
+
   } catch (error) {
     console.error(error);
   }
@@ -182,6 +238,12 @@ function filterDataByHour(hour: number, data: History[]): number {
   return filteredData.length;
 }
 
+let inter = setInterval(() => {
+  getqueue();
+  getAllteacher();
+}, timer);
+
+onMounted(getAllteacher);
 onMounted(getAllQueue);
 </script>
 

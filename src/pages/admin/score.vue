@@ -19,10 +19,10 @@
             รายการผู้รับบริการทั้งหมด
           </button>
           <button class="btn" @click="getHistoryOne">
-            รายการผู้รับบริการลักษณะที่ 1
+            รายการผู้รับบริการแบบคำขอกกู้ยืมเงิน
           </button>
           <button class="btn" @click="getHistoryTwo">
-            รายการผู้รับบริการลักษณะที่ 2
+            รายการผู้รับบริการสัญญากู้ยืมเงิน 
           </button>
           <button class="btn" @click="getHistoryOther">
             รายการผู้รับบริการอิ่น ๆ

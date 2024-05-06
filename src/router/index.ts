@@ -122,7 +122,7 @@ async function isAuthenticated() {
   const accesstoken = cookies.get("accesstoken");
   const refreshtoken = cookies.get("refreshtoken");
 
-  console.log("accesstoken: ", accesstoken);
+  // console.log("accesstoken: ", accesstoken);
   // ! check if cookies haven't accesstoken
   if (
     accesstoken === undefined ||
@@ -135,12 +135,12 @@ async function isAuthenticated() {
   }
   // ! parseJwt from cookies
   const jwtPayload = parseJwt(accesstoken);
-  console.log(jwtPayload.exp, ` Time :  ${Date.now() / 1000}`);
+  // console.log(jwtPayload.exp, ` Time :  ${Date.now() / 1000}`);
   // ! check accesstoken is expired
   if (jwtPayload.exp < Date.now() / 1000) {
     // token expired
     console.log("expried");
-    console.log(refreshtoken);
+    // console.log(refreshtoken);
     await refeshToken(refreshtoken);
     return false;
   }
@@ -160,7 +160,7 @@ async function isReserve() {
       throw Error(userqueue.statusText);
     }
 
-    console.log(userqueue.data);
+    // console.log(userqueue.data);
 
     if (
       userqueue.data === null ||
@@ -179,14 +179,17 @@ async function isReserve() {
 function isRole(role: string) {
   const accesstoken = cookies.get("accesstoken");
   const access_token_extract = parseJwt(accesstoken);
-  console.log(access_token_extract.role);
+  // console.log(access_token_extract.role);
   if (access_token_extract.role === role) {
     return true;
   }
   return false;
 }
 
+
+
 router.beforeEach(async (to, from, next) => {
+
   console.log("isAuthen", await isAuthenticated());
   const isAuth = await isAuthenticated();
   // ! check if path isn't "/" and authenticated

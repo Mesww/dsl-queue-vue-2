@@ -65,35 +65,22 @@
       </div>
     </nav>
   </template>
-  <script lang="ts">
+  <script lang="ts" setup>
   // import IconHome from "../../assets/icons/Student_Loan_logo.svg";
   import Swal from "sweetalert2";
   import "animate.css";
-  export default {
-    // swal : inject("$swal"),
-    mounted() {
-    },
-    data() {
-      return {
-        showMenu: false,
-        isOpen: true,
-      };
-    },
-    components: {
-      // IconHome,
-    },
-    methods: {
-      erorr: function () {
-        // alert('test');
-        Swal.fire({
+import { ref } from 'vue';
+  let showMenu = ref(false);
+  let isOpen = ref(true);
+  function error() {
+    Swal.fire({
           title: "Error!",
           text: "Do you want to continue",
           icon: "error",
           confirmButtonText: "Cool",
         });
-      },
-    } 
-  };
+  }
+  
   </script>
   <style lang="scss" scoped>
   

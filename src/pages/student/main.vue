@@ -1,54 +1,39 @@
- <template>
+<template>
   <div class="screens">
     <nav id="navbar" class="bg-white border rounded-b-3xl">
-    <div class="max-w-6xl mx-auto px-10 mt-12 mb-6">
-      <div class="flex justify-between">
-        <div class="flex items-center">
-          <h1 class="textHeaders">คิวของคุณคือคิวที่ {{ myqueueorder }}</h1>
-        </div>
-        <div class="flex items-center">
-          <span class="i-heroicons-clock w-8 h-8 mr-3"></span>
-          <h1 v-if="leftqueue >= 0" class="textHeaders">เหลืออีก {{ leftqueue }} คิว</h1>
-          <h1 v-else class="textHeaders">เหลืออีก 0 คิว</h1>
-
+      <div class="max-w-6xl mx-auto px-10 mt-12 mb-6">
+        <div class="flex justify-between">
+          <div class="flex items-center">
+            <h1 class="textHeaders">คิวของคุณคือคิวที่ {{ myqueueorder }}</h1>
+          </div>
+          <div class="flex items-center">
+            <span class="i-heroicons-clock w-8 h-8 mr-3"></span>
+            <h1 v-if="leftqueue >= 0" class="textHeaders">
+              เหลืออีก {{ leftqueue }} คิว
+            </h1>
+            <h1 v-else class="textHeaders">เหลืออีก 0 คิว</h1>
+          </div>
         </div>
       </div>
-    </div>
-  </nav>
+    </nav>
     <div class="maincontent">
       <div class="text-wrapper-2 mt-5 mb-16">
         กรุณามาให้ตรงเวลา&nbsp;&nbsp;
         <br />
         ถ้าถึงคิวคุณแล้วไม่อยู่ ระบบจะถือว่าสละสิทธิ์
       </div>
-      <div class="channel-wrapper">
-        <div class="channel">
-          <div class="textchannel">ช่องรับบริการที่ 1</div>
+
+      <div class="channel-wrapper " >
+        <div v-for="(teacher,index) in teachers" :key="index" class="channel">
+          <div class="textchannel">ช่องรับบริการที่ {{ teacher.channel }}</div>
           <div class="blockchannel">
             <v-img class="" alt="Ellipse" src="../../assets/Ellipse16.png" />
             <div class="flex items-center">
               <v-icon icon="mdi-account" size="x-large" class="mr-3"></v-icon>
-              <p>{{ channel1 }}</p>
-            </div>
-          </div>
-        </div>
-        <div class="channel">
-          <div class="textchannel">ช่องรับบริการที่ 2</div>
-          <div class="blockchannel">
-            <v-img class="" alt="Ellipse" src="../../assets/Ellipse16.png" />
-            <div class="flex items-center">
-              <v-icon icon="mdi-account" size="x-large" class="mr-3"></v-icon>
-              <p>{{ channel2 }}</p>
-            </div>
-          </div>
-        </div>
-        <div class="channel">
-          <div class="textchannel">ช่องรับบริการที่ 3</div>
-          <div class="blockchannel">
-            <v-img class="" alt="Ellipse" src="../../assets/Ellipse16.png" />
-            <div class="flex items-center">
-              <v-icon icon="mdi-account" size="x-large" class="mr-3"></v-icon>
-              <p>{{ channel3 }}</p>
+              <!-- <p>{{ techerchannel[index] === undefined  || techerchannel[index] === null && techerchannel[index].channel === teacher.channel ? 0 : techerchannel[index].orders}}</p> -->
+              <p v-if="techerchannel[index] === undefined  || techerchannel[index] === null">{{ 0 }}</p>
+              <p v-else-if="techerchannel[index].channel === undefined">0</p>
+              <p v-else-if="techerchannel[index].channel === teacher.channel">{{techerchannel[index].channel }}</p>
             </div>
           </div>
         </div>
@@ -60,16 +45,18 @@
       </div>
     </div>
   </div>
-</template> 
+</template>
 
 <script setup lang="ts">
-import { ref,onMounted } from "vue";
-import navbars from '../../components/student/home.navbar.vue';
+import { ref, onMounted, Ref } from "vue";
+import navbars from "../../components/student/home.navbar.vue";
 import Swal from "sweetalert2";
 import axios from "axios";
 import { useCookies } from "vue3-cookies";
 import { MaybeRefOrGetter, useInterval } from "@vueuse/core";
 import router from "@/router";
+import { Teacherchannel, User } from "@/models/User";
+import { getDatasetAtEvent } from "vue-chartjs";
 
 const { cookies } = useCookies();
 let channel1 = ref(0);
@@ -82,6 +69,17 @@ let allqueue = ref();
 let status_ = ref("");
 let channel = ref(0);
 let timer = 3000;
+
+let loading = ref(true);
+
+
+let teachers: Ref<User[]> = ref([]);
+let techerchannel: Ref<Teacherchannel[]> = ref([
+  {
+    channel: 0,
+    orders: 0,
+  },
+]);
 
 function parseJwt(token: string) {
   var base64Url = token.split(".")[1];
@@ -98,86 +96,113 @@ function parseJwt(token: string) {
   return JSON.parse(jsonPayload);
 }
 
-
-let inter = setInterval(()=>{
-  getMyqueue();
+let inter = setInterval(() => {
   getAllqueue();
+  getMyqueue();
   getLeftqueue();
-},timer);
+  loading.value === false;
+}, timer);
 
 const accesstoken = cookies.get("accesstoken");
 const access_token_extract = parseJwt(accesstoken);
 // console.log(access_token_extract);
 const studentID = access_token_extract.email.split("@")[0];
 
+async function getTeacher() {
+  try {
+    const res = await axios.get(
+      `http://localhost:${process.env.VUE_APP_BACK_PORT}/users/getAlluser`
+    );
+    if (res.status !== 200) {
+      throw Error(res.statusText);
+    }
+    teachers.value = res.data.filter((value: User) => {
+      return value.role === "TEACHER";
+    });
+    console.log(teachers.value);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
 // getMyqueue();
 async function getMyqueue() {
   try {
-    console.log("studentID : ",studentID);
-    const myqueue = await axios.get(`http://localhost:${process.env.VUE_APP_BACK_PORT}/queue/getQueueSpecific?studentID=${  studentID}`);
+    console.log("studentID : ", studentID);
+    const myqueue = await axios.get(
+      `http://localhost:${process.env.VUE_APP_BACK_PORT}/queue/getQueueSpecific?studentID=${studentID}`
+    );
     if (myqueue.status !== 200) {
-      throw Error(myqueue.statusText)
+      throw Error(myqueue.statusText);
     }
     console.log(myqueue.data[0]);
     myqueueid.value = myqueue.data[0].queueid;
     myqueueorder.value = myqueue.data[0].orders;
     console.log(myqueue.data[0].queueid);
     console.log(myqueue.data[0]);
-    status_.value= myqueue.data[0].status;
+    status_.value = myqueue.data[0].status;
     channel.value = myqueue.data[0].channel;
-    
+
     console.log(leftqueue.value);
     console.log(`${status_.value} ${channel.value} `);
     if (status_.value === "FINISH") {
-    showSuccessalert();
-  } else if (status_.value === "SKIP") {
-    showAlertpass();
-  } else if (status_.value === "PROCESS") {
-    showYourturn(`${channel.value}`);
-  } 
-  else if(status_.value === "STOP"){
-    showAlertwaiting();
-  }
-  else if (leftqueue.value === 5) {
-    showLeftqueuealert();
-  } else {
-    Swal.close();
-  }
-
+      showSuccessalert();
+    } else if (status_.value === "SKIP") {
+      showAlertpass();
+    } else if (status_.value === "PROCESS") {
+      showYourturn(`${channel.value}`);
+    } else if (status_.value === "STOP") {
+      showAlertwaiting();
+    } else if (leftqueue.value === 5) {
+      showLeftqueuealert();
+    } else {
+      Swal.close();
+    }
   } catch (error) {
     console.error(error);
   }
 }
 async function getAllqueue() {
   try {
-    const queue = await axios.get(`http://localhost:${process.env.VUE_APP_BACK_PORT}/queue/getQueue`);
+    const queue = await axios.get(
+      `http://localhost:${process.env.VUE_APP_BACK_PORT}/queue/getqueueDataspecificstatusrefuse?status1=FINISH&status2=SKIP&status3=CANCEL`
+    );
     if (queue.status !== 200) {
-      throw Error(queue.statusText)
+      throw Error(queue.statusText);
     }
-    queue.data.forEach((value: { channel: number; orders: number }) => {
-      if (value.channel === 1) {
-        channel1.value = value.orders;
-      } else if (value.channel === 2) {
-        channel2.value = value.orders;
-      } else if (value.channel === 3) {
-        channel3.value = value.orders;
-      }
-    });
+    let x:Teacherchannel[] = [];
+    teachers.value.forEach((teacher) => {
+      console.log("Teacher ",teacher.channel);  
+      queue.data.forEach((queues: { channel: number; orders: number }) => {
+        console.log("Queue ",queues.channel);
+        console.log("Teacher ",teacher.channel);
+        if (queues.channel === teacher.channel) {
+          console.log("queue channel ",queues.channel);
+          x.push({channel:queues.channel,orders:queues.orders});
+        }
+    });})
+    techerchannel.value = x ;
+    console.log("Techerchannel",techerchannel.value);
     // myqueueid.value = myqueue.data.queueid;
+    
+    console.log(loading.value);
     console.log(queue);
   } catch (error) {
     console.error(error);
   }
 }
 
-async function updateHistory(queueid:number,status:string) {
+async function updateHistory(queueid: number, status: string) {
   try {
-    const res= await axios.put(`http://localhost:${process.env.VUE_APP_BACK_PORT}/history/getHistoryUpdate`,{
-      queueid:queueid,
-      status:status
-    })
-    if ( res.status !== 200) {
-      throw Error(res.statusText)
+    const res = await axios.put(
+      `http://localhost:${process.env.VUE_APP_BACK_PORT}/history/getHistoryUpdate`,
+      {
+        queueid: queueid,
+        status: status,
+      }
+    );
+    if (res.status !== 200) {
+      throw Error(res.statusText);
     }
   } catch (error) {
     console.error(error);
@@ -186,11 +211,13 @@ async function updateHistory(queueid:number,status:string) {
 
 async function getLeftqueue() {
   try {
-    const res = await axios.get(`http://localhost:${process.env.VUE_APP_BACK_PORT}/queue/getqueueCountqueuebefore?queueidstring=${myqueueid.value}`); 
+    const res = await axios.get(
+      `http://localhost:${process.env.VUE_APP_BACK_PORT}/queue/getqueueCountqueuebefore?queueidstring=${myqueueid.value}`
+    );
     if (res.status !== 200) {
       throw Error(res.statusText);
     }
-    console.log("left queue: ",res.data);
+    console.log("left queue: ", res.data);
     leftqueue.value = res.data.queuebefore - 1;
   } catch (error) {
     console.error(error);
@@ -214,13 +241,15 @@ async function cancelqueue() {
   });
   if (result.isConfirmed) {
     try {
-      const res = await axios.delete(`http://localhost:${process.env.VUE_APP_BACK_PORT}/queue/getqueuedeleteQueue?queueid=${myqueueid.value}`);
+      const res = await axios.delete(
+        `http://localhost:${process.env.VUE_APP_BACK_PORT}/queue/getqueuedeleteQueue?queueid=${myqueueid.value}`
+      );
       if (res.status === 200) {
-        await updateHistory(myqueueid.value,"CANCEL");
-        router.push({name:"student",replace:true});
+        await updateHistory(myqueueid.value, "CANCEL");
+        router.push({ name: "student", replace: true });
         return;
       }
-      throw Error(res.statusText)
+      throw Error(res.statusText);
     } catch (error) {
       console.error(error);
     }
@@ -240,15 +269,15 @@ async function showSuccessalert() {
     timer: 3500,
     timerProgressBar: true,
   });
-  router.push({name:"studentstatisfaction", replace: true});
+  router.push({ name: "studentstatisfaction", replace: true });
 }
 
 async function showYourturn(channel: string) {
   await Swal.fire({
     reverseButtons: true,
     title: `<h1 class="text-xl">ถึงคิวของคุณแล้ว</h1>`,
-    icon:"warning",
-    iconColor:"red",
+    icon: "warning",
+    iconColor: "red",
     html: `
 
       <div class="flex items-center justify-center">
@@ -277,12 +306,11 @@ async function showLeftqueuealert() {
               <p class="mr-2">คิว</p>
             </div>
   `,
-  showConfirmButton:false
+    showConfirmButton: false,
     // showCloseButton: true,
-,    color: "#191771",
+    color: "#191771",
   });
 }
-
 
 function showAlertwaiting() {
   Swal.fire({
@@ -333,40 +361,40 @@ async function showAlertpass() {
   // });
   if (confirm.isConfirmed) {
     try {
-      const res = await axios.delete(`http://localhost:${process.env.VUE_APP_BACK_PORT}/queue/getqueuedeleteQueue?queueid=${myqueueid.value}`);
+      const res = await axios.delete(
+        `http://localhost:${process.env.VUE_APP_BACK_PORT}/queue/getqueuedeleteQueue?queueid=${myqueueid.value}`
+      );
       if (res.status === 200) {
-        router.push({name:"student",replace:true});
+        router.push({ name: "student", replace: true });
         return;
       }
-      throw Error(res.statusText)
+      throw Error(res.statusText);
     } catch (error) {
       console.error(error);
     }
   }
 }
-onMounted(getMyqueue);
+onMounted(getTeacher);
 onMounted(getAllqueue);
+onMounted(getMyqueue);
 onMounted(getLeftqueue);
 
 function start() {
-  inter =  setInterval(()=>{
-  getMyqueue();
-  getAllqueue();
-  getLeftqueue();
-},timer)  
+  inter = setInterval(() => {
+    getMyqueue();
+    getAllqueue();
+    getLeftqueue();
+    loading.value === false;
+  }, timer);
 }
 
 function stop(interval: number | undefined) {
   clearInterval(interval);
 }
-
-
 </script>
 
-
 <style lang="scss" scoped>
-
-img{
+img {
   width: fit-content;
 }
 

@@ -1,7 +1,7 @@
 <template lang="">
     <footer class="p-4 border rounded-t-3xl bg-white text-black text-center">
    <p class="text-sm text">MFU e-queue ส่วนพัฒนานักศึกษา</p>
-   <p  class="text">มหาวิทยาลับแม่ฟ้าหลวง</p>
+   <p  class="text">มหาวิทยาลัยแม่ฟ้าหลวง</p>
  </footer>
 </template>
 <script setup>

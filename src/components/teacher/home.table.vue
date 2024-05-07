@@ -186,7 +186,7 @@ console.log(queue.value);
 function convertType(type: string): string {
   switch (type) {
     case "ONE":
-      return "แบบคำขอกกู้ยืมเงิน";
+      return "แบบคำขอกู้ยืมเงิน";
     case "TWO":
       return "สัญญากู้ยืมเงิน หรือ แบบยืนยันการเบิกเงินกู้ยืม";
     default:

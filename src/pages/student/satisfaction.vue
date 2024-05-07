@@ -15,7 +15,7 @@ const studentID = access_token_extract.email.split("@")[0];
 let myqueues = ref([]);
 
 let selectedValue = ref([
-  { Question: "โปรดให้คะแนนความพึงพอใจการให้บริการ", value: 1 },
+  { Question: "โปรดให้คะแนนความพึงพอใจการให้บริการ", value: 5 },
 ]);
 
 function parseJwt(token: string) {
@@ -99,7 +99,7 @@ onMounted(getMyqueue);
       >
         <div class="rounded-md bg-white box mt-5 p-5 d-flex">
           <div>
-            <p>{{ index + 1 }}. {{ question.Question }}</p>
+            <p> {{ question.Question }}</p>
             <div class="flex justify-between">
               <div>
                 <v-icon v-for="n in 5" :key="n" @click="question.value = n" :color="n <= question.value ? 'yellow' : 'main'">mdi-star</v-icon>

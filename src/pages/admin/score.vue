@@ -19,13 +19,13 @@
             รายการผู้รับบริการทั้งหมด
           </button>
           <button class="btn" @click="getHistoryOne">
-            รายการผู้รับบริการแบบคำขอกกู้ยืมเงิน
+            รายการผู้รับบริการแบบคำขอกู้ยืมเงิน
           </button>
           <button class="btn" @click="getHistoryTwo">
             รายการผู้รับบริการสัญญากู้ยืมเงิน 
           </button>
           <button class="btn" @click="getHistoryOther">
-            รายการผู้รับบริการอิ่น ๆ
+            รายการผู้รับบริการอื่น ๆ
           </button>
         </div>
         <!-- ตารางข้อมูล -->
@@ -103,7 +103,7 @@
   function convertType(type: string): string {
     switch (type) {
       case "ONE":
-        return "แบบคำขอกกู้ยืมเงิน";
+        return "แบบคำขอกู้ยืมเงิน";
       case "TWO":
         return "สัญญากู้ยืมเงิน หรือ แบบยืนยันการเบิกเงินกู้ยืม";
       default:
@@ -136,8 +136,17 @@
   }
   
   function convertToCSV(rows: any[]) {
-    const header = Object.keys(rows[0]).join(",");
-    const content = rows.map((row) => Object.values(row).join(",")).join("\n");
+    const selectedFields = rows.map(row => ({
+      'วันเวลา': row.datetime,
+      'งานบริการ': row.type,
+      'คะแนน': row.rate,
+    }));
+
+    const header = Object.keys(selectedFields[0]).join(",");
+    // const content = rows.map((row) => Object.values(row).join(",")).join("\n");
+    const content = rows.map(row => {
+    return [ row.datetime, `"${row.type}"`,row.rate].join(",");
+  }).join("\n");
     return `${header}\n${content}`;
   }
   </script>

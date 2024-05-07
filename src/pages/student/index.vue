@@ -38,7 +38,7 @@ async function popUp() {
     reverseButtons: true,
     input: "select",
     inputOptions: {
-      ONE: "แบบคำขอกกู้ยืมเงิน",
+      ONE: "แบบคำขอกู้ยืมเงิน",
       TWO: "สัญญากู้ยืมเงิน หรือ แบบยืนยันการเบิกเงินกู้ยืม",
       OTHER: "ประเภทอื่น ๆ",
     },

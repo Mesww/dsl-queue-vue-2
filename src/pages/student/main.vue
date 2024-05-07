@@ -98,7 +98,7 @@ function parseJwt(token: string) {
 
 let inter = setInterval(() => {
   getAllqueue();
-  getMyqueue();
+  getmyqueue();
   getLeftqueue();
   loading.value === false;
 }, timer);
@@ -125,16 +125,25 @@ async function getTeacher() {
   }
 }
 
-// getMyqueue();
-async function getMyqueue() {
+async function getmyqueue() {
   try {
-    console.log("studentID : ", studentID);
     const myqueue = await axios.get(
       `http://localhost:${process.env.VUE_APP_BACK_PORT}/queue/getQueueSpecific?studentID=${studentID}`
     );
     if (myqueue.status !== 200) {
       throw Error(myqueue.statusText);
     }
+    return myqueue;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// getMyqueue();
+async function getMyqueue() {
+  try {
+    console.log("studentID : ", studentID);
+    const myqueue = await getmyqueue();
     console.log(myqueue.data[0]);
     myqueueid.value = myqueue.data[0].queueid;
     myqueueorder.value = myqueue.data[0].orders;
@@ -162,6 +171,9 @@ async function getMyqueue() {
     console.error(error);
   }
 }
+
+
+
 async function getAllqueue() {
   try {
     const queue = await axios.get(
@@ -376,12 +388,14 @@ async function showAlertpass() {
 }
 onMounted(getTeacher);
 onMounted(getAllqueue);
+onMounted(getmyqueue);
 onMounted(getMyqueue);
+
 onMounted(getLeftqueue);
 
 function start() {
   inter = setInterval(() => {
-    getMyqueue();
+    getmyqueue();
     getAllqueue();
     getLeftqueue();
     loading.value === false;

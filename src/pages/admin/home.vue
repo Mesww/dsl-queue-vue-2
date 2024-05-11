@@ -45,26 +45,33 @@ let teacher : Ref<User[]> = ref([])
   async function getAllQueue() {
   try {
     const res = await getqueue();
-    console.log(res.data);
+    // console.log(res.data);
     history.value = res.data;
+    let qt: History[] = [];
     res.data.forEach((value: History) => {
       value.datetime = new Date(value.datetime);
       // ! Queue today
     if (value.datetime.getDate() === today.getDate()) {
-        queueToday.value.push(value);
+        qt.push(value);
       }
     });
+
+    queueToday.value = qt;
     // console.log("Queue today", queueToday.value);
 
-    const hourCounts: number[] = [];
+
+    let hourCounts: number[] = [];
+    let hc:number[] = [];
     for (let i = 8; i <= 16; i++) {
       const count = filterDataByHour(i, queueToday.value);
-      hourCounts.push(count);
+      hc.push(count);
     }
+    hourCounts = hc;
 
     const finish = queueToday.value.filter((value) => {
       return value.status === "FINISH";
     });
+
     const notFinish = queueToday.value.filter((value) => {
       return (
         value.status !== "FINISH" &&
@@ -86,7 +93,7 @@ let teacher : Ref<User[]> = ref([])
     let rateone =0;
     let ratetwo =0;
     let ratethree =0;
-    console.log(one.length);
+    // console.log(one.length);
     for (let index = 0; index < history.value.length; index++) {
       if (history.value[index].type === "ONE") {
         rateone = (history.value[index].rate + rateone)/ history.value.filter((value)=>{
@@ -104,15 +111,20 @@ let teacher : Ref<User[]> = ref([])
     }
     
     // console.log(teacher.value);
-    const channelteacher:any[] =[];
+    let channelteacher:any[] =[];
     let finishqueueTeacher:any[] = [];
+
+    let ct:any[] = [];
     teacher.value.forEach((value)=>{
-      if (channelteacher.includes(value.channel) ===  undefined || channelteacher.includes(value.channel) === false ) {
-        channelteacher.push(`ช่องบริการที่ ${value.channel}`);
-        console.log(channelteacher);
+      if (ct.includes(value.channel) ===  undefined || ct.includes(value.channel) === false ) {
+        ct.push(`ช่องบริการที่ ${value.channel}`);
+        // console.log(ct);
       }
     });
-    console.log('finish : ',finish);
+
+    channelteacher = ct;
+    
+    // console.log('finish : ',finish);
 
     finish.forEach((value)=>{
       finishqueueTeacher[value.channel-1] = finish.filter((values)=>{
@@ -120,7 +132,7 @@ let teacher : Ref<User[]> = ref([])
       }).length;
     })
 
-    console.log(finishqueueTeacher);
+    // console.log(finishqueueTeacher);
 
     chartData.value = [
       {
@@ -206,7 +218,7 @@ let teacher : Ref<User[]> = ref([])
     ];
 
     loading.value = false;
-    console.log(loading.value);
+    // console.log(loading.value);
   } catch (error) {
     console.error(error);
   }
@@ -239,7 +251,7 @@ function filterDataByHour(hour: number, data: History[]): number {
 }
 
 let inter = setInterval(() => {
-  getqueue();
+  getAllQueue();
   getAllteacher();
 }, timer);
 

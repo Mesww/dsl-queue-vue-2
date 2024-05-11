@@ -1,7 +1,7 @@
 <template lang="">
   <div class="app">
     <main>
-      <div class="flex justify-center">
+      <div class="flex">
         <v-text-field
           v-model="search"
           label="Search"
@@ -14,24 +14,32 @@
           single-line
         ></v-text-field>
       </div>
-      <div class="abutton">
-        <button class="btn" @click="getAllhistory">
+      <div class="abutton text-white">
+        <!-- <button class="btn" @click="getAllhistory">
           รายการผู้รับบริการทั้งหมด
-        </button>
-        <button class="btn" @click="getHistoryMonth">
+        </button> -->
+        <!-- <button class="btn" @click="getHistoryMonth">
           รายการผู้รับบริการ (เดือนนี้)
         </button>
         <button class="btn" @click="getHistoryToday">
           รายการผู้รับบริการ (วันนี้)
-        </button>
+        </button> -->
+
+        <v-date-input
+          v-model="date"
+          label="เลือกวันที่"
+          max-width="368"
+          multiple="range"
+          @input="filterByDateRange"
+        ></v-date-input>
       </div>
       <!-- ตารางข้อมูล -->
 
       <v-data-table
         :headers="column"
-        :items="history"
+        :items="filteredHistory"
         :search="search"
-        class="custom-table"
+        class="custom-table mr-52"
       ></v-data-table>
       <v-btn color="red" @click="exportToCSV">Download</v-btn>
     </main>
@@ -39,9 +47,13 @@
 </template>
 <script lang="ts" setup>
 import axios, { all } from "axios";
-import { ref, computed } from "vue";
+import { ref, computed,shallowRef } from "vue";
 let history = ref([]);
 let search = ref("");
+let menu = ref(false);
+let selectedDate = ref(null);
+let date = shallowRef<string | string[]>();
+
 const column = ref([
   {
     key: "datetime",
@@ -82,10 +94,13 @@ async function get_History() {
     if (res.status !== 200) {
       throw Error(res.statusText);
     }
-    console.log(res.data);
+    // console.log(res.data);
     history.value = res.data;
     history.value.forEach((value) => {
       value.type = convertType(value.type);
+      value.datetime = `${new Date(value.datetime).toDateString()} ${
+        new Date(value.datetime).toTimeString().split(" ")[0]
+      }  `;
     });
     // ! backup history
     allhistory.value = history.value;
@@ -106,7 +121,7 @@ async function getHistoryToday() {
     const entryDateString = format(entryDate, "yyyy-MM-dd");
     return entryDateString === todayString;
   });
-  console.log(todayHistory);
+  // console.log(todayHistory);
   // Update the history array with today's entries
   history.value = todayHistory;
 }
@@ -122,7 +137,7 @@ function convertType(type: string): string {
 }
 
 function exportToCSV() {
-  const csvContent = convertToCSV(history.value);
+  const csvContent = convertToCSV(filteredHistory.value);
   const blob = new Blob([csvContent], { type: "text/csv" });
   const link = document.createElement("a");
   link.href = window.URL.createObjectURL(blob);
@@ -132,40 +147,82 @@ function exportToCSV() {
 
 async function getAllhistory() {
   history.value = allhistory.value;
-  console.log(history.value);
+
+  // console.log(history.value);
 }
 
-async function getHistoryMonth() {
-  const today = new Date();
-  const currentMonth = today.getMonth() + 1; // Adding 1 because getMonth() returns zero-based month index
-  const currentYear = today.getFullYear();
-  const currentMonthString = `${currentYear}-${currentMonth
-    .toString()
-    .padStart(2, "0")}`; // Format: "YYYY-MM"
 
-  // Filter the existing history array to get entries for the current month
-  const currentMonthHistory = allhistory.value.filter((entry) => {
+
+const filterByDateRange = () => {
+  const [startDate, endDate] = date.value;
+  if (startDate && endDate) {
+    const filtered = history.value.filter((entry) => {
+      const entryDate = new Date(entry.datetime);
+      return entryDate >= new Date(startDate) && entryDate <= new Date(endDate);
+    });
+    history.value = filtered;
+  } else {
+    getAllhistory();
+  }
+};
+
+let filteredHistory = computed(() => {
+  if (!date.value) return history.value;
+  return history.value.filter((entry) => {
     const entryDate = new Date(entry.datetime);
-    const entryMonth = entryDate.getMonth() + 1; // Adding 1 because getMonth() returns zero-based month index
-    const entryYear = entryDate.getFullYear();
-    const entryMonthString = `${entryYear}-${entryMonth
-      .toString()
-      .padStart(2, "0")}`;
-    return entryMonthString === currentMonthString;
+    // console.log("entryDate ",entryDate);
+    const date_ = date.value;
+    // console.log("date ",date.value);
+    if (date_?.length > 1 ) {
+      return entryDate >= new Date(date_[0]) && entryDate <= new Date(date_[date_?.length-1]);
+    }else{
+      // console.log(entryDate === new Date(date_[0]));
+      return entryDate.toString().split(" ")[0] === new Date(date_[0]).toString().split(" ")[0];
+    }
   });
+});
 
-  // Update the history array with entries for the current month
-  history.value = currentMonthHistory;
-  console.log(history.value);
-}
+// async function getHistoryMonth() {
+//   const today = new Date();
+//   const currentMonth = today.getMonth() + 1; // Adding 1 because getMonth() returns zero-based month index
+//   const currentYear = today.getFullYear();
+//   const currentMonthString = `${currentYear}-${currentMonth
+//     .toString()
+//     .padStart(2, "0")}`; // Format: "YYYY-MM"
+
+//   // Filter the existing history array to get entries for the current month
+//   const currentMonthHistory = allhistory.value.filter((entry) => {
+//     const entryDate = new Date(entry.datetime);
+//     const entryMonth = entryDate.getMonth() + 1; // Adding 1 because getMonth() returns zero-based month index
+//     const entryYear = entryDate.getFullYear();
+//     const entryMonthString = `${entryYear}-${entryMonth
+//       .toString()
+//       .padStart(2, "0")}`;
+//     return entryMonthString === currentMonthString;
+//   });
+
+//   // Update the history array with entries for the current month
+//   history.value = currentMonthHistory;
+//   // console.log(history.value);
+// }
 
 function convertToCSV(rows: any[]) {
-  const header = Object.keys(rows[0]).join(",");
-  const content = rows.map((row) => Object.values(row).join(",")).join("\n");
+  const selectedFields = rows.map(row => ({
+      'วันเวลา': row.datetime,
+      'รหัสนักศึกษา': row.studentid,
+      'งานบริการ': row.type,
+      'ช่องบริการ':row.channel,
+      'คะแนน': row.rate,
+    }));
+
+  const header = Object.keys(selectedFields[0]).join(",");
+  const content = rows.map(row => {
+    return [ row.datetime,`"${row.studentid}"`, `"${row.type}"`,`"${row.channel}"`,row.rate].join(",");
+  }).join("\n");
   return `${header}\n${content}`;
 }
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
 * {
   margin: 0;
   padding: 0;
@@ -185,6 +242,9 @@ button {
   background: none;
 }
 
+.dp__input_wrap {
+  width: 5rem;
+}
 .app {
   width: 100vw;
   padding: 1rem 15vw 1rem 15vw;
@@ -233,17 +293,18 @@ button {
 }
 
 .abutton {
-  margin-bottom: 0.5rem;
+  // margin-bottom: 0.5rem;
+  padding: 5px;
   display: flex;
-  justify-content: space-around;
+  justify-content: end;
 }
 
 .btn {
   background-color: #191771;
   color: #f1f5f9;
   border-radius: 2rem;
-  padding: 10px 50px;
-  margin-right: 1rem;
+  padding: 10px 10px;
+  margin-right: 2rem;
   border: none;
   cursor: pointer;
 }

@@ -23,17 +23,26 @@
         ถ้าถึงคิวคุณแล้วไม่อยู่ ระบบจะถือว่าสละสิทธิ์
       </div>
 
-      <div class="channel-wrapper " >
-        <div v-for="(teacher,index) in teachers" :key="index" class="channel">
+      <div class="channel-wrapper">
+        <div v-for="(teacher, index) in teachers" :key="index" class="channel">
           <div class="textchannel">ช่องรับบริการที่ {{ teacher.channel }}</div>
           <div class="blockchannel">
             <v-img class="" alt="Ellipse" src="../../assets/Ellipse16.png" />
             <div class="flex items-center">
               <v-icon icon="mdi-account" size="x-large" class="mr-3"></v-icon>
               <!-- <p>{{ techerchannel[index] === undefined  || techerchannel[index] === null && techerchannel[index].channel === teacher.channel ? 0 : techerchannel[index].orders}}</p> -->
-              <p v-if="techerchannel[index] === undefined  || techerchannel[index] === null">{{ 0 }}</p>
+              <p
+                v-if="
+                  techerchannel[index] === undefined ||
+                  techerchannel[index] === null
+                "
+              >
+                {{ 0 }}
+              </p>
               <p v-else-if="techerchannel[index].channel === undefined">0</p>
-              <p v-else-if="techerchannel[index].channel === teacher.channel">{{techerchannel[index].channel }}</p>
+              <p v-else-if="techerchannel[index].channel === teacher.channel">
+                {{ techerchannel[index].channel }}
+              </p>
             </div>
           </div>
         </div>
@@ -72,7 +81,6 @@ let timer = 3000;
 
 let loading = ref(true);
 
-
 let teachers: Ref<User[]> = ref([]);
 let techerchannel: Ref<Teacherchannel[]> = ref([
   {
@@ -98,7 +106,7 @@ function parseJwt(token: string) {
 
 let inter = setInterval(() => {
   getAllqueue();
-  getmyqueue();
+  getMyqueue();
   getLeftqueue();
   loading.value === false;
 }, timer);
@@ -125,7 +133,7 @@ async function getTeacher() {
   }
 }
 
-async function getmyqueue() {
+async function getFirstmyqueue() {
   try {
     const myqueue = await axios.get(
       `http://localhost:${process.env.VUE_APP_BACK_PORT}/queue/getQueueSpecific?studentID=${studentID}`
@@ -139,11 +147,19 @@ async function getmyqueue() {
   }
 }
 
+let exitingqueue = ref([]);
+
+async function getExitingqueue() {
+  exitingqueue.value = await getFirstmyqueue();
+}
+
+console.log(exitingqueue.value);
 // getMyqueue();
 async function getMyqueue() {
   try {
     console.log("studentID : ", studentID);
-    const myqueue = await getmyqueue();
+    const myqueue = await getFirstmyqueue();
+
     console.log(myqueue.data[0]);
     myqueueid.value = myqueue.data[0].queueid;
     myqueueorder.value = myqueue.data[0].orders;
@@ -154,25 +170,42 @@ async function getMyqueue() {
 
     console.log(leftqueue.value);
     console.log(`${status_.value} ${channel.value} `);
-    if (status_.value === "FINISH") {
-      showSuccessalert();
-    } else if (status_.value === "SKIP") {
-      showAlertpass();
-    } else if (status_.value === "PROCESS") {
-      showYourturn(`${channel.value}`);
-    } else if (status_.value === "STOP") {
-      showAlertwaiting();
-    } else if (leftqueue.value === 5) {
-      showLeftqueuealert();
-    } else {
-      Swal.close();
-    }
+
+    checkStatusChange(status_.value);
   } catch (error) {
     console.error(error);
   }
 }
 
+let exitingstatus = "WAIT";
 
+function checkStatusChange(newStatus: string) {
+  // Compare newStatus with previous status or any other necessary conditions
+  // Trigger SweetAlert based on the comparison result
+  if (leftqueue.value === 5) {
+    newStatus = "CLOSET";
+  }
+
+  if (exitingstatus === newStatus) {
+    return;
+  }
+  if (newStatus === "FINISH") {
+    showSuccessalert();
+  } else if (newStatus === "SKIP") {
+    showAlertpass();
+  } else if (newStatus === "PROCESS") {
+    showYourturn(`${channel.value}`);
+    exitingstatus = "PROCESS";
+  } else if (newStatus === "STOP") {
+    showAlertwaiting();
+    exitingstatus = "STOP";
+  } else if (leftqueue.value === 5) {
+    showLeftqueuealert();
+    exitingstatus = "CLOSET"
+  } else {
+    Swal.close();
+  }
+}
 
 async function getAllqueue() {
   try {
@@ -182,21 +215,22 @@ async function getAllqueue() {
     if (queue.status !== 200) {
       throw Error(queue.statusText);
     }
-    let x:Teacherchannel[] = [];
+    let x: Teacherchannel[] = [];
     teachers.value.forEach((teacher) => {
-      console.log("Teacher ",teacher.channel);  
+      console.log("Teacher ", teacher.channel);
       queue.data.forEach((queues: { channel: number; orders: number }) => {
-        console.log("Queue ",queues.channel);
-        console.log("Teacher ",teacher.channel);
+        console.log("Queue ", queues.channel);
+        console.log("Teacher ", teacher.channel);
         if (queues.channel === teacher.channel) {
-          console.log("queue channel ",queues.channel);
-          x.push({channel:queues.channel,orders:queues.orders});
+          console.log("queue channel ", queues.channel);
+          x.push({ channel: queues.channel, orders: queues.orders });
         }
-    });})
-    techerchannel.value = x ;
-    console.log("Techerchannel",techerchannel.value);
+      });
+    });
+    techerchannel.value = x;
+    console.log("Techerchannel", techerchannel.value);
     // myqueueid.value = myqueue.data.queueid;
-    
+
     console.log(loading.value);
     console.log(queue);
   } catch (error) {
@@ -220,7 +254,6 @@ async function updateHistory(queueid: number, status: string) {
     console.error(error);
   }
 }
-
 async function getLeftqueue() {
   try {
     const res = await axios.get(
@@ -388,14 +421,14 @@ async function showAlertpass() {
 }
 onMounted(getTeacher);
 onMounted(getAllqueue);
-onMounted(getmyqueue);
+onMounted(getExitingqueue);
 onMounted(getMyqueue);
 
 onMounted(getLeftqueue);
 
 function start() {
   inter = setInterval(() => {
-    getmyqueue();
+    getMyqueue();
     getAllqueue();
     getLeftqueue();
     loading.value === false;

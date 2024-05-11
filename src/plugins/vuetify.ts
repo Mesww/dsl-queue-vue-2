@@ -2,8 +2,10 @@
 import '@mdi/font/css/materialdesignicons.css'
 import 'vuetify/styles'
 
+
 // Vuetify
 import { createVuetify } from 'vuetify'
+import { VDateInput } from 'vuetify/labs/VDateInput';
 import colors from 'vuetify/util/colors';
 export default createVuetify(
   // https://vuetifyjs.com/en/introduction/why-vuetify/#feature-guide
@@ -20,5 +22,8 @@ export default createVuetify(
         },
       },
     },
+    components:{
+      VDateInput
+    }
   }
 )

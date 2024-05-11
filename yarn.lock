@@ -1103,6 +1103,14 @@
   resolved "https://registry.npmmirror.com/@leichtgewicht/ip-codec/-/ip-codec-2.0.5.tgz#4fc56c15c580b9adb7dc3c333a134e540b44bfb1"
   integrity sha512-Vo+PSpZG2/fmgmiNzYK9qWRh8h/CHrwD0mo1h1DzL4yzHNSfWYujGTYsWGreD000gcgmZ7K4Ys6Tx9TxtsKdDw==
 
+"@mathieustan/vue-datepicker@^0.2.11":
+  version "0.2.11"
+  resolved "https://registry.npmmirror.com/@mathieustan/vue-datepicker/-/vue-datepicker-0.2.11.tgz#58d420c04312417fb10978f838ef984c28389c2d"
+  integrity sha512-+EQvlAwnC0fn8UCUgYaGI1r027HzrIWIbqtcYZMQ8TRZbhzT3ILXlqRSxX4z547vF7dpmCjNyvpLAF5zFMnQug==
+  dependencies:
+    body-scroll-lock "^2.6.1"
+    dayjs "1.8.24"
+
 "@mdi/font@5.9.55":
   version "5.9.55"
   resolved "https://registry.npmmirror.com/@mdi/font/-/font-5.9.55.tgz#41acd50b88073ded7095fc3029d8712b6e12f38e"
@@ -1845,6 +1853,13 @@
   resolved "https://registry.npmmirror.com/@vue/web-component-wrapper/-/web-component-wrapper-1.3.0.tgz#b6b40a7625429d2bd7c2281ddba601ed05dc7f1a"
   integrity sha512-Iu8Tbg3f+emIIMmI2ycSI8QcEuAUgPTgHwesDU1eKMLE4YC/c/sFbGc70QgMq31ijRftV0R7vCm9co6rldCeOA==
 
+"@vuepic/vue-datepicker@^8.5.1":
+  version "8.5.1"
+  resolved "https://registry.npmmirror.com/@vuepic/vue-datepicker/-/vue-datepicker-8.5.1.tgz#ca7a91ddeb87aef6dcefb7417a8a65365cd9a64f"
+  integrity sha512-kFfYB14wKShBhEcHwaQgonMo4AhsldiLuoxrWuutYBdHsUnwecY8vw+zoieI/mZsCYep4chH1yDByYf5JGjKOA==
+  dependencies:
+    date-fns "^3.6.0"
+
 "@vuetify/loader-shared@^1.7.1":
   version "1.7.1"
   resolved "https://registry.npmmirror.com/@vuetify/loader-shared/-/loader-shared-1.7.1.tgz#0f63a3d41b6df29a2db1ff438aa1819b237c37a3"
@@ -2404,6 +2419,11 @@ body-parser@1.20.2:
     raw-body "2.5.2"
     type-is "~1.6.18"
     unpipe "1.0.0"
+
+body-scroll-lock@^2.6.1:
+  version "2.7.1"
+  resolved "https://registry.npmmirror.com/body-scroll-lock/-/body-scroll-lock-2.7.1.tgz#caf3f9c91773af1ffb684cd66ed9137b5b737014"
+  integrity sha512-hS53SQ8RhM0e4DsQ3PKz6Gr2O7Kpdh59TWU98GHjaQznL7y4dFycEPk7pFQAikqBaUSCArkc5E3pe7CWIt2fZA==
 
 bonjour-service@^1.0.11:
   version "1.2.1"
@@ -3139,6 +3159,11 @@ date-fns@^3.6.0:
   version "3.6.0"
   resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-3.6.0.tgz#f20ca4fe94f8b754951b24240676e8618c0206bf"
   integrity sha512-fRHTG8g/Gif+kSh50gaGEdToemgfj74aRX3swtiouboip5JDLAyDE9F11nHMIcvOaXeOC6D7SpNhi7uFyB7Uww==
+
+dayjs@1.8.24:
+  version "1.8.24"
+  resolved "https://registry.npmmirror.com/dayjs/-/dayjs-1.8.24.tgz#2ef8a2ab9425eaf3318fe78825be1c571027488d"
+  integrity sha512-bImQZbBv86zcOWOq6fLg7r4aqMx8fScdmykA7cSh+gH1Yh8AM0Dbw0gHYrsOrza6oBBnkK+/OaR+UAa9UsMrDw==
 
 debounce@^1.2.1:
   version "1.2.1"
@@ -7924,10 +7949,10 @@ vue@^3.0.0, vue@^3.2.13:
     "@vue/server-renderer" "3.4.25"
     "@vue/shared" "3.4.25"
 
-vuetify@^3.5.17:
-  version "3.5.17"
-  resolved "https://registry.npmmirror.com/vuetify/-/vuetify-3.5.17.tgz#b45b94910da08b39a3c2f91f9bb4828fc96ea3e1"
-  integrity sha512-/Veklxxyu/l63q7QQOqJZeZukIKI2sBxY7FKMDcNup2KSGMjyjT+oYXy1DOdl7wlU3c3fKGQMFHqVWb0HDsyDw==
+vuetify@^3.6.4:
+  version "3.6.4"
+  resolved "https://registry.npmmirror.com/vuetify/-/vuetify-3.6.4.tgz#32bf401a569463fcc6e627b909b487aa35dfa2f7"
+  integrity sha512-H0s+VQAuFDIaqJaxaYv3DuJoSlThMfIJX5l06sGkxk9YDMxiEjE4ABT58fTAZGdPMF/TzMXtTHbRNCHes0UaHQ==
 
 vuex@^4.0.0:
   version "4.1.0"

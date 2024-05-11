@@ -134,6 +134,7 @@ async function fetchQueue() {
         if (value.status === "WAIT") {
           x.push(value);
         }
+        value.datetime = `${new Date(value.datetime).toDateString()} ${new Date(value.datetime).toTimeString().split(' ')[0]}  `;
       });
       waitingqueue = x;
       console.log(waitingqueue);

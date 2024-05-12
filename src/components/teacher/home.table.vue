@@ -54,7 +54,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { onMounted, ref } from "vue";
 import { useCookies } from "vue3-cookies";
-let time = 60000;
+let time = 600000;
 const { cookies } = useCookies();
 let myChannel = ref(0);
 let totalAllqueue = ref(0);
@@ -136,6 +136,7 @@ async function fetchQueue() {
         }
         value.datetime = `${new Date(value.datetime).toDateString()} ${new Date(value.datetime).toTimeString().split(' ')[0]}  `;
       });
+
       waitingqueue = x;
       console.log(waitingqueue);
       if (waitingqueue.length >= 1) {
@@ -182,6 +183,7 @@ async function updateHistory(queueid: number, status: string) {
   }
 }
 
+
 console.log(queue.value);
 
 function convertType(type: string): string {
@@ -194,6 +196,8 @@ function convertType(type: string): string {
       return "ประเภทอื่น ๆ";
   }
 }
+
+
 
 async function loadItems(options: any) {
   // Here you can handle the options object which contains the pagination, sorting, and searching options.
@@ -222,6 +226,8 @@ async function checkIs_called() {
     console.error(error);
   }
 }
+
+
 
 async function callAction(row: { queueid: number }) {
   console.log(row.queueid);

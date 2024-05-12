@@ -159,7 +159,7 @@ async function getMyqueue() {
   try {
     console.log("studentID : ", studentID);
     const myqueue = await getFirstmyqueue();
-
+    const checkbreaks = await checkBreak();
     console.log(myqueue.data[0]);
     myqueueid.value = myqueue.data[0].queueid;
     myqueueorder.value = myqueue.data[0].orders;
@@ -167,6 +167,12 @@ async function getMyqueue() {
     console.log(myqueue.data[0]);
     status_.value = myqueue.data[0].status;
     channel.value = myqueue.data[0].channel;
+
+    if (checkbreaks === true && status_.value !== "STOP" ) {
+        await changeStatus({queueid: myqueueid.value});
+        exitingstatus = "STOP";
+        // return;
+    }
 
     console.log(leftqueue.value);
     console.log(`${status_.value} ${channel.value} `);
@@ -176,6 +182,33 @@ async function getMyqueue() {
     console.error(error);
   }
 }
+
+async function changeStatus(row: { queueid: number }) {
+  console.log(row.queueid);
+  try {
+    // if (is_called) {
+    //   Swal.fire("โปรดทำคิวปัจจุบันให้เสร็จสิ้นก่อน");
+    //   return;
+    // }
+    const res = await axios.put(
+      `http://localhost:${process.env.VUE_APP_BACK_PORT}/queue/getqueueUpdatestatus`,
+      {
+        queueid: row.queueid,
+        status: "STOP",
+      }
+    );
+
+    if (res.status === 200) {
+      console.log("put OK");
+      // await refreshNuxtData("queueconvert");
+    } else {
+      throw Error(res.statusText);
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
+
 
 let exitingstatus = "WAIT";
 
@@ -206,7 +239,26 @@ function checkStatusChange(newStatus: string) {
     Swal.close();
   }
 }
-
+async function checkBreak() {
+  try {
+    const res = await axios.get(
+      `http://localhost:${process.env.VUE_APP_BACK_PORT}/queue/getqueueSpecificstatus?status=STOP`
+    );
+    if (res.status === 200) {
+      console.log(res.data);
+      console.log(res.data.length);
+      if (res.data.length >= 1) {
+        return true;
+      }else{
+        return false;
+      }
+    } else {
+      throw Error(res.statusText);
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
 async function getAllqueue() {
   try {
     const queue = await axios.get(

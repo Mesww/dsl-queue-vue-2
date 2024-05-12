@@ -66,6 +66,10 @@ async function popUp() {
   }
 }
 
+
+
+
+
 async function createHistory(queue: {
   studentid: string;
   type: string;
